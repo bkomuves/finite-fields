@@ -20,7 +20,7 @@ Stability:           Experimental
 Category:            Math
 Tested-With:         GHC == 8.6.5
 Cabal-Version:       1.24
-Build-Type:          Simple
+Build-Type:          Custom
 
 extra-source-files:  conway/*
 
@@ -36,7 +36,7 @@ Library
 
   Exposed-Modules:     Math.FiniteField.PrimeField.Generic
                        Math.FiniteField.PrimeField.Small
-                       -- Math.FiniteField.Galois.Conway
+                       Math.FiniteField.Conway
                        Math.FiniteField.Primes
                        Math.FiniteField.TypeLevel
                        Math.FiniteField.Sign
@@ -47,7 +47,7 @@ Library
 
   Hs-Source-Dirs:      src
 
-  -- C-Sources:           data/conway_table.c 
+  C-Sources:           cbits/conway_table.c 
 
   ghc-options:         -fwarn-tabs -fno-warn-unused-matches -fno-warn-name-shadowing -fno-warn-unused-imports
 

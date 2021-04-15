@@ -1,2 +1,3 @@
 dist
 dist-newstyle
+cbits/conway_table.c

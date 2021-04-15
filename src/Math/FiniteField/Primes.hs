@@ -2,6 +2,7 @@
 -- | Prime numbers and related number theoretical stuff.
 
 {-# LANGUAGE BangPatterns #-}
+
 module Math.FiniteField.Primes 
   ( -- * Integer logarithm
     integerLog2
@@ -332,13 +333,14 @@ powerMod a' k m = {- debug bs $ -} go a bs where
       rest = go (mod (x*x) m) bs 
       
 --------------------------------------------------------------------------------
--- Prime testing
+-- * Prime testing
 
 -- | Prime testing using trial division 
 isPrimeTrialDivision :: Integer -> Bool
 isPrimeTrialDivision n = and [ not (divides p n) | p <- ps ] where
-  ps = takeWhile (\p -> p*p <= n) primes 
-
+  ps = takeWhile (<= nsqrt) primes 
+  nsqrt = integerSquareRoot n
+  
 -- | Miller-Rabin Primality Test (taken from Haskell wiki). 
 -- We test the primality of the first argument @n@ by using the second argument @a@ as a candidate witness.
 -- If it returs @False@, then @n@ is composite. If it returns @True@, then @n@ is either prime or composite.
