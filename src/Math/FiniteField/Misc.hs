@@ -1,8 +1,13 @@
 
+-- | Miscelleanous auxilary functions
+
 {-# LANGUAGE BangPatterns #-}
 module Math.FiniteField.Misc where
 
+--------------------------------------------------------------------------------
+
 import Data.List
+import Data.Word
 
 --------------------------------------------------------------------------------
 -- * pairs
@@ -56,6 +61,10 @@ tuples' :: [Int] -> [[Int]]
 tuples' [] = [[]]
 tuples' (s:ss) = [ x:xs | x <- [0..s] , xs <- tuples' ss ] 
 
+word32Tuples' :: [Word32] -> [[Word32]]
+word32Tuples' [] = [[]]
+word32Tuples' (s:ss) = [ x:xs | x <- [0..s] , xs <- word32Tuples' ss ] 
+
 -- | positive \"tuples\" fitting into a give shape.
 tuples1' :: [Int] -> [[Int]]
 tuples1' [] = [[]]
@@ -84,5 +93,14 @@ productInterleaved = go where
   go [x]   = x
   go [x,y] = x*y
   go list  = go (evens list) * go (odds list)
+
+--------------------------------------------------------------------------------
+-- * words
+
+w32toW64 :: Word32 -> Word64
+w32toW64 = fromIntegral
+
+w64toW32 :: Word64 -> Word32
+w64toW32 = fromIntegral
 
 --------------------------------------------------------------------------------

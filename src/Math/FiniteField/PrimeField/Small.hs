@@ -48,6 +48,12 @@ modpInteger x p = fromIntegral (mod x (fromIntegral (fromSmallPrime p)))
 modpSigned :: Int64 -> IsSmallPrime p -> Int64
 modpSigned x p = mod x (fromSmallPrimeSigned p)
 
+-- | Enumarte all field elements
+enumerateFp :: IsSmallPrime p -> [Fp p]
+enumerateFp p = [ Fp p k | k <- [0..fromSmallPrime p-1] ]
+
+--------------------------------------------------------------------------------
+
 instance Eq (Fp p) where
   (==) (Fp _ x) (Fp _ y) = x == y
 

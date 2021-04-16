@@ -39,8 +39,8 @@ module Math.FiniteField.TypeLevel
   , isPrime , believeMeItsPrime
     -- * Small primes
   , IsSmallPrime , fromSmallPrime , fromSmallPrimeSigned , fromSmallPrime' 
+  , isSmallPrime , believeMeItsASmallPrime
   , smallPrimeIsPrime , smallPrimeIsSmall , mkSmallPrime
-  , believeMeItsASmallPrime
   ) 
   where
 
@@ -76,7 +76,7 @@ fromPrime (PrimeWitness sn) = fromSNat sn
 -- so it's only good for small numbers for now
 --
 isPrime :: SNat n -> Maybe (IsPrime n)
-isPrime sn = if isPrimeTrialDivision (fromSNat sn)
+isPrime sn = if (fromSNat sn > 1) && isPrimeTrialDivision (fromSNat sn)
   then Just (PrimeWitness sn)
   else Nothing
 
@@ -123,6 +123,19 @@ fromSmallPrime (SmallPrimeWitness sn) = fromSNat64 sn
 
 fromSmallPrimeSigned :: IsSmallPrime n -> Int64
 fromSmallPrimeSigned (SmallPrimeWitness sn) = fromIntegral (fromSNat64 sn)
+
+-- | Prime testing.
+--
+-- Note: this uses trial division at the moment, 
+-- so it's only good for small numbers for now
+--
+isSmallPrime :: SNat64 n -> Maybe (IsSmallPrime n)
+isSmallPrime sn = 
+  if (n > 1) && (n < 2^31) && isPrimeTrialDivision (fromIntegral n)
+    then Just (SmallPrimeWitness sn)
+    else Nothing
+  where
+    n = fromSNat64 sn
 
 smallPrimeIsPrime :: IsSmallPrime n -> IsPrime n
 smallPrimeIsPrime (SmallPrimeWitness (SNat64 n)) = PrimeWitness (SNat (fromIntegral n))
