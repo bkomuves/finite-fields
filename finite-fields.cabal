@@ -6,7 +6,7 @@ Description:         Implementation of arithmetic in finite fields (prime fields
                      and fields of prime power order). Finite fields are
                      ubiquitous in algebraic geometry, number theory and cryptography.
                      
-                     For now we concentrate on relatively small fields,
+                     For now the focus is on relatively small fields,
                      but more efficient algorithms for big fields (required in 
                      cryptography) may be added later.
 
@@ -32,16 +32,23 @@ source-repository head
 
 Library
 
-  Build-Depends:       base >= 4 && < 5, containers >= 0.5, random
+  Build-Depends:       base >= 4 && < 5, containers >= 0.5, 
+                       vector >= 0.12, random
 
   Exposed-Modules:     Math.FiniteField.PrimeField.Generic
+                       Math.FiniteField.PrimeField.Generic.Raw
                        Math.FiniteField.PrimeField.Small
+                       Math.FiniteField.PrimeField.Small.Raw
+                       Math.FiniteField.Galois.Small
                        Math.FiniteField.Conway
+                       Math.FiniteField.Conway.Internal
                        Math.FiniteField.Primes
                        Math.FiniteField.TypeLevel
                        Math.FiniteField.Sign
                        Math.FiniteField.Misc
 
+  Other-Modules:       Math.FiniteField.TypeLevel.Singleton
+  
   Default-Language:    Haskell2010
   Default-Extensions:  CPP, BangPatterns, KindSignatures, DataKinds
 

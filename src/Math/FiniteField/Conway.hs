@@ -4,7 +4,8 @@
 -- The data is from <http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html>
 --
 
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ForeignFunctionInterface, StandaloneDeriving #-}
+{-# LANGUAGE GADTs, ExistentialQuantification, DataKinds, KindSignatures #-}
 
 module Math.FiniteField.Conway where
 
@@ -13,8 +14,9 @@ module Math.FiniteField.Conway where
 import Data.Word
 import Data.Bits
 
+import GHC.TypeNats
+
 import qualified Data.IntMap.Strict as IntMap
-import Data.IntMap.Strict (IntMap)
 
 import Foreign.C
 import Foreign.Ptr
@@ -24,8 +26,11 @@ import Foreign.Marshal.Array
 
 import qualified System.IO.Unsafe as Unsafe
 
+import Math.FiniteField.TypeLevel
+import Math.FiniteField.TypeLevel.Singleton
+import Math.FiniteField.Conway.Internal
+
 -- import Data.Array
--- import Math.FiniteField.TypeLevel
 -- import Math.FiniteField.PrimeField.Small
 
 --------------------------------------------------------------------------------
@@ -37,55 +42,42 @@ import qualified System.IO.Unsafe as Unsafe
 --   }
 
 --------------------------------------------------------------------------------
+-- * Witness for the existence of precomputed Conway polynomials
 
-foreign import ccall "get_conway_table_size" c_conway_table_size :: Word32
-foreign import ccall "get_conway_table_ptr"  c_conway_table_ptr  :: Ptr Word32
+data SomeConwayPoly = forall p m. SomeConwayPoly (HasConwayPoly p m) 
 
-marshalConwayEntry :: Ptr Word32 -> IO (Word64,Int,[Word64])
-marshalConwayEntry ptr = do
-  p <- peek ptr             :: IO Word32
-  m <- peek (plusPtr ptr 4) :: IO Word32
-  coeffs <- peekArray (fromIntegral m + 1) (plusPtr ptr 8) :: IO [Word32]
-  return (fromIntegral p , fromIntegral m , map fromIntegral coeffs)
+deriving instance Show SomeConwayPoly
 
---------------------------------------------------------------------------------
+newtype HasConwayPoly (p :: Nat) (m :: Nat) where
+  ConwayWitness :: Ptr Word32 -> HasConwayPoly p m
 
-newtype ConwayTable 
-  = ConwayTable { fromConwayTable :: IntMap (Ptr Word32) }
+instance Show (HasConwayPoly p m) where
+  show witness = "ConwayPoly[" ++ show p ++ "^" ++ show m ++ "]" where
+    (p,m) = conwayParams witness
 
-encodePrimeExpo :: Int -> Int -> Int
-encodePrimeExpo !prime !expo  = prime .|. (shiftL expo 20)
+conwayPrime :: HasConwayPoly p m -> IsSmallPrime p
+conwayPrime (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
+  (p,m) <- getConwayEntryParams ptr
+  return (believeMeItsASmallPrime (SNat64 p))
 
-decodePrimeExpo :: Int -> (Int,Int)
-decodePrimeExpo !code = (code .&. 0xfffff , shiftR code 20)
+-- | @(prime,exponent)@
+conwayParams :: HasConwayPoly p m -> (Int,Int)
+conwayParams (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
+  (p,m) <- getConwayEntryParams ptr
+  return (fromIntegral p, fromIntegral m)
 
-{-# NOINLINE theConwayTable #-}
-theConwayTable :: ConwayTable
-theConwayTable = Unsafe.unsafePerformIO readConwayTableIO
+conwayCoefficients :: HasConwayPoly p m -> [Word64]
+conwayCoefficients (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
+  (_,_,list) <- marshalConwayEntry ptr
+  return list
 
-{-# NOINLINE lookupConwayEntry #-}
-lookupConwayEntry :: Int -> Int -> Maybe (Word64,Int,[Word64])
-lookupConwayEntry p m = case IntMap.lookup (encodePrimeExpo p m) (fromConwayTable theConwayTable) of
+fromConway :: HasConwayPoly p m -> Ptr Word32
+fromConway (ConwayWitness ptr) = ptr
+
+-- | Usage: @lookupConwayPoly p m@ for @q = p^m@
+lookupConwayPoly :: Int -> Int -> Maybe SomeConwayPoly
+lookupConwayPoly p m = case IntMap.lookup (encodePrimeExpo p m) (fromConwayTable theConwayTable) of
   Nothing  -> Nothing
-  Just ptr -> Just (Unsafe.unsafePerformIO (marshalConwayEntry ptr))
-
---------------------------------------------------------------------------------
-
-readConwayTableIO :: IO ConwayTable
-readConwayTableIO = 
-  do
-    list <- go c_conway_table_size c_conway_table_ptr 
-    let f (p,m,ptr) = (encodePrimeExpo (fromIntegral p) (fromIntegral m) , ptr)
-    return $ ConwayTable $ IntMap.fromList (map f list)
-  where
-    go :: Word32 -> Ptr Word32 -> IO [(Word32,Word32,Ptr Word32)]
-    go 0  _    = return []
-    go !k !ptr = do
-      p <- peek ptr             :: IO Word32
-      m <- peek (plusPtr ptr 4) :: IO Word32
-      let ptr' = plusPtr ptr (8 + 4*(fromIntegral m + 1))
-      let this = (p,m,ptr)
-      rest <- go (k-1) ptr'
-      return (this:rest)
+  Just ptr -> Just (SomeConwayPoly (ConwayWitness ptr))
 
 --------------------------------------------------------------------------------
