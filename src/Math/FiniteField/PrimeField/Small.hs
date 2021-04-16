@@ -10,7 +10,7 @@
 -- is @2^31@ instead :)
 --
 
-{-# LANGUAGE BangPatterns, DataKinds, KindSignatures #-}
+{-# LANGUAGE BangPatterns, DataKinds, KindSignatures, TypeFamilies #-}
 module Math.FiniteField.PrimeField.Small where
 
 --------------------------------------------------------------------------------
@@ -22,6 +22,7 @@ import GHC.TypeNats (Nat)
 
 import Math.FiniteField.Primes
 import Math.FiniteField.TypeLevel
+import Math.FiniteField.Class 
 
 import qualified Math.FiniteField.PrimeField.Small.Raw as Raw
 
@@ -31,9 +32,16 @@ import qualified Math.FiniteField.PrimeField.Small.Raw as Raw
 data Fp (p :: Nat) 
   = Fp {-# UNPACK #-} !(IsSmallPrime p) {-# UNPACK #-} !Word64
 
+fpWitness :: Fp p -> IsSmallPrime p
+fpWitness (Fp p _) = p
+
 -- | Constructing elements
 fp :: IsSmallPrime p -> Word64 -> Fp p
-fp !p !n = Fp p (modp n p)
+fp !p !n 
+  | n >= 0 && n < q  = Fp p n
+  | otherwise        = Fp p (mod n q)
+  where
+    !q = fromSmallPrime p
 
 -- | The order of the field
 fpOrder :: Fp p -> Word64
@@ -61,7 +69,7 @@ instance Show (Fp p) where
   show (Fp p k) = "(" ++ show k ++ " mod " ++ show (fromSmallPrime p) ++ ")"
 
 instance Num (Fp p) where
-  fromInteger = error "Fp/fromInteger: not defined; use `fp` instead" 
+  fromInteger = error "Fp/fromInteger: cannot be defined; use `embed` instead" 
   negate (Fp p x) = Fp p (Raw.neg (fromSmallPrime p) x)
   (+) (Fp p x) (Fp _ y) = Fp p (Raw.add (fromSmallPrime p) x y)
   (-) (Fp p x) (Fp _ y) = Fp p (Raw.sub (fromSmallPrime p) x y)
@@ -70,9 +78,22 @@ instance Num (Fp p) where
   signum (Fp p _) = Fp p 1
 
 instance Fractional (Fp p) where
-  fromRational = error "Fp/fromRational: not defined; use `fp` instead" 
+  fromRational = error "Fp/fromRational: cannot be defined; use `embed` instead" 
   recip (Fp p x)          = Fp p (Raw.inv (fromSmallPrime p) x)
   (/)   (Fp p x) (Fp _ y) = Fp p (Raw.div (fromSmallPrime p) x y)
+
+instance Field (Fp p) where
+  type Witness (Fp p) = IsSmallPrime p
+  characteristic _ p = fromSmallPrimeInteger p
+  dimension      _ _ = 1
+  fieldSize      _ p = fromSmallPrimeInteger p
+  enumerate        p = let q = fromSmallPrime p in [ fp p k | k<-[0..q-1] ]
+  embed          w x = fp w (fromInteger  x)
+  embedSmall     w x = fp w (fromIntegral x)
+  primGen            = error "PrimeField/Small/Fp: primGen: not implemented"
+  witnessOf          = fpWitness
+  power              = fpPow
+  powerSmall     x e = fpPow_ x (fromIntegral e)
 
 --------------------------------------------------------------------------------
 -- * Nontrivial operations

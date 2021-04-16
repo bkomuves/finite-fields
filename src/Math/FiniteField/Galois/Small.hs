@@ -12,9 +12,9 @@
 -- * some more
 --
 -- To look up Conway polynomials, see the module "Math.FiniteField.Conway".
+--
 
-
-{-# LANGUAGE BangPatterns, DataKinds, KindSignatures, GADTs #-}
+{-# LANGUAGE BangPatterns, DataKinds, KindSignatures, GADTs, TypeFamilies #-}
 module Math.FiniteField.Galois.Small where
 
 --------------------------------------------------------------------------------
@@ -29,9 +29,10 @@ import GHC.TypeNats (Nat)
 import Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as Vec
 
-import Math.FiniteField.Primes
+import Math.FiniteField.Class 
 import Math.FiniteField.TypeLevel
 import Math.FiniteField.Conway
+import Math.FiniteField.Primes
 import Math.FiniteField.Misc
 
 import qualified Math.FiniteField.PrimeField.Small.Raw  as Raw
@@ -39,24 +40,47 @@ import qualified Math.FiniteField.Galois.Small.Internal as Quo
 
 --------------------------------------------------------------------------------  
 
+-- | We need either a Conway polynomial, or in the @m=1@ case, a proof that @p@ is prime
+data WitnessGF (p :: Nat) (m :: Nat) where
+  WitnessFp :: IsSmallPrime  p   -> WitnessGF p 1
+  WitnessFq :: HasConwayPoly p m -> WitnessGF p m
+
+fromWitnessGF :: WitnessGF p m -> (Word64,Int)
+fromWitnessGF w = case w of
+  WitnessFp p -> (fromSmallPrime p, 1)
+  WitnessFq c -> conwayParams c
+
+--------------------------------------------------------------------------------  
+
 -- | An element of the finite field of order @q = p^m@
 data Fq (p :: Nat) (m :: Nat) where
   Fp :: {-# UNPACK #-} !(IsSmallPrime  p  ) -> {-# UNPACK #-} !Word64          -> Fq p 1
-  Fq :: {-# UNPACK #-} !(HasConwayPoly p m) ->                !(Vector Word32) -> Fq q n
+  Fq :: {-# UNPACK #-} !(HasConwayPoly p m) ->                !(Vector Word32) -> Fq p m
+
+fqWitness :: Fq p m -> WitnessGF p m
+fqWitness element = case element of
+  Fp p _ -> WitnessFp p
+  Fq c _ -> WitnessFq c
 
 -- | An element of the prime field
-fp :: HasConwayPoly p m -> Word64 -> Fq p m
-fp conway x = Fq conway (Vec.fromListN m (y : replicate (m-1) 0)) where
-  (p,m) = conwayParams conway
-  y = fromIntegral (mod x p) :: Word32
+fp :: WitnessGF p m -> Word64 -> Fq p m
+fp witness x = 
+  case witness of
+    WitnessFp p -> fp1 p x 
+    WitnessFq c -> fpM c x
 
--- | For @m = 1@ we don't need a Conway polynomial
-fp_ :: IsSmallPrime p -> Word64 -> Fq p 1
-fp_ prime x = Fp prime y where
-  y = mod x (fromSmallPrime prime)
+  where
+    fpM :: HasConwayPoly p m -> Word64 -> Fq p m
+    fpM conway x = Fq conway (Vec.fromListN m (y : replicate (m-1) 0)) where
+      (p,m) = conwayParams conway
+      y = if x >= 0 && x < p then fromIntegral x else fromIntegral (mod x p) :: Word32
+    
+    fp1 :: IsSmallPrime p -> Word64 -> Fq p 1
+    fp1 prime x = Fp prime y where
+      p = fromSmallPrime prime 
+      y = if x >= 0 && x < p then x else mod x p
 
--- | The field element corresponding to the polynomial @X@ (which is a generator
--- of the (cyclic) multiplicative group)
+-- | The field element corresponding to the polynomial @X@ (which is a primitive generator)
 gen :: HasConwayPoly p m -> Fq p m
 gen conway = gen' conway 1
 
@@ -82,7 +106,7 @@ instance Show (Fq p m) where
     f !e !v = show v ++ "*X^" ++ show e
 
 instance Num (Fq p m) where
-  fromInteger = error "Fq/fromInteger: cannot be defined; use `fq` instead" 
+  fromInteger = error "Fq/fromInteger: cannot be defined; use `embed` instead" 
   negate = neg
   (+) = add
   (-) = sub
@@ -90,47 +114,52 @@ instance Num (Fq p m) where
   abs = id
   signum = const1
 
--- instance Fractional (Fq p) where
---   fromRational = error "Fp/fromRational: cannot be defined; use `fq` instead" 
---   recip = inv
---   (/)   = div
+instance Fractional (Fq p m) where
+  fromRational = error "Fp/fromRational: cannot be defined; use `embed` instead" 
+  recip = error "Fp/recip: not implemented yet" -- inv
+  (/)   = error "Fp/div: not implemented yet"   -- div
+
+instance Field (Fq p m) where
+  type Witness (Fq p m) = WitnessGF p m
+  characteristic  _ w = fromIntegral (fst (fromWitnessGF w))
+  dimension       _ w = fromIntegral (snd (fromWitnessGF w))
+  fieldSize       _ w = case fromWitnessGF w of (p,m) -> (fromIntegral p :: Integer) ^ m
+  enumerate         w = enumerateFq w
+  witnessOf         x = fqWitness x
+  embed           w x = fp w (fromInteger  x)
+  embedSmall      w x = fp w (fromIntegral x)
+  power               = error "Fq/power: not implemented yet" -- fqPow
+  primGen           w = case w of
+                          WitnessFp p  -> error "GaloisField/Small/Fp: primGen: not implemented"
+                          WitnessFq c  -> gen c
 
 --------------------------------------------------------------------------------  
 -- * Enumerations
 
 -- | Enumerate all field elements (in a lexicographic order)
-enumerateFq :: HasConwayPoly p m -> [Fq p m]
-enumerateFq conway = [ Fq conway vec | vec <- vecs ] where
-  (p,m) = conwayParams conway
-  shape = replicate m (fromIntegral (p-1) :: Word32)
-  vecs = map (Vec.fromListN m) (word32Tuples' shape)
+enumerateFq :: WitnessGF p m -> [Fq p m]
+enumerateFq witness = 
+  case witness of
+    WitnessFp p -> enumerateFp1 p
+    WitnessFq c -> enumerateFpM c
 
-enumerateFp :: IsSmallPrime p -> [Fq p 1]
-enumerateFp prime = [ Fp prime k | k <- [0..fromSmallPrime prime-1] ]
-
--- | Enumerate all non-zero field elements, in cyclic order;
--- this is the multiplicative group of GF(p^m).
-multiplicativeGroupFq :: HasConwayPoly p m -> [Fq p m]
-multiplicativeGroupFq conway = scanl1 (*) (replicate (n-1) g) where
-  g     = gen conway
-  (p,m) = conwayParams conway
-  n     = (fromIntegral p) ^ m :: Int
-
--- NOTE: we would need a table of primitive roots for this...
---
--- multiplicativeGroupFp :: IsSmallPrime p -> [Fq p 1]
--- multiplicativeGroupFp conway = scanl1 (*) (replicate (n-1) g) where
---   g     = gen conway
---   (p,m) = conwayParams conway
---   n     = (fromIntegral p) ^ m :: Int
+  where
+    enumerateFpM :: HasConwayPoly p m -> [Fq p m]
+    enumerateFpM conway = [ Fq conway vec | vec <- vecs ] where
+      (p,m) = conwayParams conway
+      shape = replicate m (fromIntegral (p-1) :: Word32)
+      vecs = map (Vec.fromListN m) (word32Tuples' shape)
+    
+    enumerateFp1 :: IsSmallPrime p -> [Fq p 1]
+    enumerateFp1 prime = [ Fp prime k | k <- [0..fromSmallPrime prime-1] ]
 
 --------------------------------------------------------------------------------  
 -- * Field operations
 
 const1 :: Fq p m -> Fq p m
 const1 what = case what of
-  Fp p _ -> fp_ p 1
-  -- Fq c _ -> fp  c 1
+  Fp p _ -> fp (WitnessFp p) 1
+  Fq c _ -> fp (WitnessFq c) 1
 
 neg :: Fq p m -> Fq p m 
 neg (Fp p x ) = Fp p (Raw.neg (fromSmallPrime p) x ) 

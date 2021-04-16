@@ -38,9 +38,11 @@ module Math.FiniteField.TypeLevel
   , IsPrime , fromPrime , fromPrime' 
   , isPrime , believeMeItsPrime
     -- * Small primes
-  , IsSmallPrime , fromSmallPrime , fromSmallPrimeSigned , fromSmallPrime' 
+  , IsSmallPrime , fromSmallPrime , fromSmallPrimeSigned , fromSmallPrimeInteger , fromSmallPrime' 
   , isSmallPrime , believeMeItsASmallPrime
   , smallPrimeIsPrime , smallPrimeIsSmall , mkSmallPrime
+    -- * Proxy
+  , proxyOf, proxyOf1
   ) 
   where
 
@@ -48,6 +50,7 @@ module Math.FiniteField.TypeLevel
 
 import Data.Int
 import Data.Word
+import Data.Proxy
 
 import GHC.TypeNats
 import Data.Proxy
@@ -121,6 +124,9 @@ fromSmallPrime' (SmallPrimeWitness sn) = sn
 fromSmallPrime :: IsSmallPrime n -> Word64
 fromSmallPrime (SmallPrimeWitness sn) = fromSNat64 sn
 
+fromSmallPrimeInteger :: IsSmallPrime n -> Integer
+fromSmallPrimeInteger (SmallPrimeWitness sn) = fromIntegral (fromSNat64 sn)
+
 fromSmallPrimeSigned :: IsSmallPrime n -> Int64
 fromSmallPrimeSigned (SmallPrimeWitness sn) = fromIntegral (fromSNat64 sn)
 
@@ -150,5 +156,14 @@ mkSmallPrime _ (Witness31 sn) = SmallPrimeWitness sn
 -- | Escape hatch
 believeMeItsASmallPrime :: SNat64 n -> IsSmallPrime n
 believeMeItsASmallPrime sn = SmallPrimeWitness sn
+
+--------------------------------------------------------------------------------
+-- * Proxy
+
+proxyOf :: a -> Proxy a
+proxyOf _ = Proxy
+
+proxyOf1 :: f a -> Proxy a
+proxyOf1 _ = Proxy
 
 --------------------------------------------------------------------------------

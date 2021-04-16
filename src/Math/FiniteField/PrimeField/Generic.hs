@@ -1,7 +1,7 @@
 
 -- | Prime fields, naive implementation
 
-{-# LANGUAGE BangPatterns, DataKinds, KindSignatures #-}
+{-# LANGUAGE BangPatterns, DataKinds, KindSignatures, TypeFamilies #-}
 module Math.FiniteField.PrimeField.Generic where
 
 --------------------------------------------------------------------------------
@@ -11,6 +11,7 @@ import GHC.TypeNats (Nat)
 
 import Math.FiniteField.Primes
 import Math.FiniteField.TypeLevel
+import Math.FiniteField.Class
 
 import qualified Math.FiniteField.PrimeField.Generic.Raw as Raw
 
@@ -20,10 +21,17 @@ import qualified Math.FiniteField.PrimeField.Generic.Raw as Raw
 data Fp (p :: Nat) 
   = Fp !(IsPrime p) !Integer
 
+fpWitness :: Fp p -> IsPrime p
+fpWitness (Fp p _) = p
+
 -- | Constructing elements
 fp :: IsPrime p -> Integer -> Fp p
-fp !p !n = Fp p (modp n p)
-
+fp !p !n 
+  | n >= 0 && n < q  = Fp p n
+  | otherwise        = Fp p (mod n q)
+  where
+    !q = fromPrime p
+    
 -- | The order of the field
 fpOrder :: Fp p -> Integer
 fpOrder (Fp p _) = fromPrime p
@@ -50,6 +58,17 @@ instance Fractional (Fp p) where
   fromRational = error "Fp/fromRational: not defined; use `fp` instead" 
   recip (Fp p x)          = Fp p (Raw.inv (fromPrime p) x)
   (/)   (Fp p x) (Fp _ y) = Fp p (Raw.div (fromPrime p) x y)
+
+instance Field (Fp p) where
+  type Witness (Fp p) = IsPrime p
+  characteristic _ p = fromPrime p
+  dimension      _ _ = 1
+  fieldSize      _ p = fromPrime p
+  enumerate        p = let q = fromPrime p in [ fp p k | k<-[0..q-1] ]
+  embed              = fp
+  primGen            = error "PrimeField/Generic/Fp: primGen: not implemented"
+  witnessOf          = fpWitness
+  power              = fpPow
 
 --------------------------------------------------------------------------------
 -- * Nontrivial operations
