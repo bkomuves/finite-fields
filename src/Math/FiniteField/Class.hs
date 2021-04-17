@@ -6,6 +6,7 @@ module Math.FiniteField.Class where
 
 --------------------------------------------------------------------------------
 
+import Data.Bits
 import Data.List
 import Data.Proxy
 
@@ -39,6 +40,7 @@ class (Eq f, Show f, Num f, Fractional f) => Field f where
   embedSmall w x = embed w (fromIntegral x)
   powerSmall x e = power x (fromIntegral e)
   fieldSize pxy w = characteristic pxy w ^ dimension pxy w
+  power          = powerDefault
 
 --------------------------------------------------------------------------------
 
@@ -66,5 +68,21 @@ multGroup w = scanl1 (*) list where
   pxy  = proxyOf g
   m    = fieldSize pxy w
   list = replicate (fromIntegral m - 1) g
+
+-- | Generic exponentiation
+powerDefault :: forall f. Field f => f -> Integer -> f
+powerDefault z e 
+  | e < 0     = powerDefault (recip z) (negate e)
+  | e >= pm1  = go (one w) z (mod e pm1)
+  | otherwise = go (one w) z e
+  where
+    w   = witnessOf z
+    pm1 = fieldSize (proxyOf z) w - 1
+    go :: f -> f -> Integer -> f
+    go !acc !y !e = if e == 0 
+      then acc
+      else case (e .&. 1) of
+        0 -> go  acc    (y*y) (shiftR e 1)
+        _ -> go (acc*y) (y*y) (shiftR e 1)
 
 --------------------------------------------------------------------------------

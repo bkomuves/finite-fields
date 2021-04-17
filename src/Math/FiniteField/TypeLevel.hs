@@ -23,8 +23,8 @@
 --   or @IsSmallPrime n@) to create finite fields.
 --
 
-{-# LANGUAGE DataKinds, KindSignatures, GADTs, ExistentialQuantification #-}
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DataKinds, KindSignatures, PolyKinds #-}
+{-# LANGUAGE GADTs, ExistentialQuantification, StandaloneDeriving #-}
 
 module Math.FiniteField.TypeLevel
   ( -- * Singleton types

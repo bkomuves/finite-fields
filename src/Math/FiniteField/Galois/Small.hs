@@ -19,6 +19,8 @@ module Math.FiniteField.Galois.Small where
 
 --------------------------------------------------------------------------------
 
+import Prelude hiding (div)
+
 import Data.Bits
 import Data.Int
 import Data.Word
@@ -36,7 +38,7 @@ import Math.FiniteField.Primes
 import Math.FiniteField.Misc
 
 import qualified Math.FiniteField.PrimeField.Small.Raw  as Raw
--- import qualified Math.FiniteField.Galois.Small.Internal as Quo
+import qualified Math.FiniteField.Galois.Small.Internal as Quo
 
 --------------------------------------------------------------------------------  
 
@@ -115,9 +117,9 @@ instance Num (Fq p m) where
   signum = const1
 
 instance Fractional (Fq p m) where
-  fromRational = error "Fp/fromRational: cannot be defined; use `embed` instead" 
-  recip = error "Fp/recip: not implemented yet" -- inv
-  (/)   = error "Fp/div: not implemented yet"   -- div
+  fromRational = error "Fq/fromRational: cannot be defined; use `embed` instead" 
+  recip = inv -- error "Fq/recip: not implemented yet" -- inv
+  (/)   = div -- error "Fq/div: not implemented yet"   -- div
 
 instance Field (Fq p m) where
   type Witness (Fq p m) = WitnessGF p m
@@ -128,7 +130,7 @@ instance Field (Fq p m) where
   witnessOf         x = fqWitness x
   embed           w x = fp w (fromInteger  x)
   embedSmall      w x = fp w (fromIntegral x)
-  power               = error "Fq/power: not implemented yet" -- fqPow
+  -- power               = error "Fq/power: not implemented yet" -- fqPow
   primGen           w = case w of
                           WitnessFq cw -> gen cw
                           WitnessFp pw -> prim where
@@ -167,18 +169,26 @@ const1 what = case what of
 
 neg :: Fq p m -> Fq p m 
 neg (Fp p x ) = Fp p (Raw.neg (fromSmallPrime p) x ) 
--- neg (Fq c xs) = Fq c (Quo.neg (conwayPrime_   c) xs)
+neg (Fq c xs) = Fq c (Quo.neg (conwayPrime_   c) xs)
 
 add :: Fq p m -> Fq p m -> Fq p m
 add (Fp p x ) (Fp _ y ) = Fp p (Raw.add (fromSmallPrime p) x  y )
--- add (Fq c xs) (Fq _ ys) = Fq c (Quo.add (conwayPrime_   c) xs ys)
+add (Fq c xs) (Fq _ ys) = Fq c (Quo.add (conwayPrime_   c) xs ys)
 
 sub :: Fq p m -> Fq p m -> Fq p m
 sub (Fp p x ) (Fp _ y ) = Fp p (Raw.sub (fromSmallPrime p) x  y ) 
--- sub (Fq c xs) (Fq _ ys) = Fq c (Quo.sub (conwayPrime_   c) xs ys)
+sub (Fq c xs) (Fq _ ys) = Fq c (Quo.sub (conwayPrime_   c) xs ys)
 
 mul :: Fq p m -> Fq p m -> Fq p m
 mul (Fp p x ) (Fp _ y ) = Fp p (Raw.mul (fromSmallPrime p) x  y ) 
--- mul (Fq c xs) (Fq _ ys) = Fq c (Quo.mul (fromConwayPoly c) xs ys)
+mul (Fq c xs) (Fq _ ys) = Fq c (Quo.mul (fromConwayPoly c) xs ys)
+
+inv :: Fq p m -> Fq p m 
+inv (Fp p x ) = Fp p (Raw.inv                  (fromSmallPrime p) x ) 
+inv (Fq c xs) = Fq c (Quo.inv (conwayPrime_ c) (fromConwayPoly c) xs)
+
+div :: Fq p m -> Fq p m -> Fq p m
+div (Fp p x ) (Fp _ y ) = Fp p (Raw.div                  (fromSmallPrime p) x  y ) 
+div (Fq c xs) (Fq _ ys) = Fq c (Quo.div (conwayPrime_ c) (fromConwayPoly c) xs ys)
 
 --------------------------------------------------------------------------------
