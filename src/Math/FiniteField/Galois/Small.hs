@@ -36,7 +36,7 @@ import Math.FiniteField.Primes
 import Math.FiniteField.Misc
 
 import qualified Math.FiniteField.PrimeField.Small.Raw  as Raw
-import qualified Math.FiniteField.Galois.Small.Internal as Quo
+-- import qualified Math.FiniteField.Galois.Small.Internal as Quo
 
 --------------------------------------------------------------------------------  
 
@@ -130,8 +130,12 @@ instance Field (Fq p m) where
   embedSmall      w x = fp w (fromIntegral x)
   power               = error "Fq/power: not implemented yet" -- fqPow
   primGen           w = case w of
-                          WitnessFp p  -> error "GaloisField/Small/Fp: primGen: not implemented"
-                          WitnessFq c  -> gen c
+                          WitnessFq cw -> gen cw
+                          WitnessFp pw -> prim where
+                            p    = fromSmallPrime pw
+                            prim = case lookupConwayPrimRoot_ (fromIntegral p) of
+                              Just g       -> embedSmall w (fromIntegral g)
+                              Nothing      -> error "Fp/primGen: primitive generator not found in the Conway table"
 
 --------------------------------------------------------------------------------  
 -- * Enumerations
@@ -163,18 +167,18 @@ const1 what = case what of
 
 neg :: Fq p m -> Fq p m 
 neg (Fp p x ) = Fp p (Raw.neg (fromSmallPrime p) x ) 
-neg (Fq c xs) = Fq c (Quo.neg (conwayPrime_   c) xs)
+-- neg (Fq c xs) = Fq c (Quo.neg (conwayPrime_   c) xs)
 
 add :: Fq p m -> Fq p m -> Fq p m
 add (Fp p x ) (Fp _ y ) = Fp p (Raw.add (fromSmallPrime p) x  y )
-add (Fq c xs) (Fq _ ys) = Fq c (Quo.add (conwayPrime_   c) xs ys)
+-- add (Fq c xs) (Fq _ ys) = Fq c (Quo.add (conwayPrime_   c) xs ys)
 
 sub :: Fq p m -> Fq p m -> Fq p m
 sub (Fp p x ) (Fp _ y ) = Fp p (Raw.sub (fromSmallPrime p) x  y ) 
-sub (Fq c xs) (Fq _ ys) = Fq c (Quo.sub (conwayPrime_   c) xs ys)
+-- sub (Fq c xs) (Fq _ ys) = Fq c (Quo.sub (conwayPrime_   c) xs ys)
 
 mul :: Fq p m -> Fq p m -> Fq p m
 mul (Fp p x ) (Fp _ y ) = Fp p (Raw.mul (fromSmallPrime p) x  y ) 
-mul (Fq c xs) (Fq _ ys) = Fq c (Quo.mul (fromConwayPoly c) xs ys)
+-- mul (Fq c xs) (Fq _ ys) = Fq c (Quo.mul (fromConwayPoly c) xs ys)
 
 --------------------------------------------------------------------------------

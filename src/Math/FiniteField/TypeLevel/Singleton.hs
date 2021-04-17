@@ -26,6 +26,9 @@ newtype SNat (n :: Nat)
   = SNat Integer
   deriving Show
 
+proxyOfSNat :: SNat n -> Proxy n
+proxyOfSNat _ = Proxy
+
 fromSNat :: SNat n -> Integer
 fromSNat (SNat n) = n
 
@@ -37,6 +40,9 @@ newtype SNat64 (n :: Nat)
   = SNat64 Word64
   deriving Show
 
+proxyOfSNat64 :: SNat64 n -> Proxy n
+proxyOfSNat64 _ = Proxy
+
 fromSNat64 :: SNat64 n -> Word64
 fromSNat64 (SNat64 n) = n
 
@@ -47,7 +53,7 @@ proxyToSNat64 proxy = SNat64 (fromIntegral (natVal proxy))
 -- * Creating singleton types
 
 data SomeSNat 
-  = forall (n :: Nat). SomeSNat (SNat n)
+  = forall (n :: Nat). KnownNat n => SomeSNat (SNat n)
 
 deriving instance Show SomeSNat
 
@@ -58,7 +64,7 @@ someSNat n
       SomeNat proxy -> SomeSNat (proxyToSNat proxy)
 
 data SomeSNat64
-  = forall (n :: Nat). SomeSNat64 (SNat64 n)
+  = forall (n :: Nat). KnownNat n => SomeSNat64 (SNat64 n)
 
 deriving instance Show SomeSNat64
 
@@ -73,3 +79,18 @@ someSNat64_ n = case someNatVal (fromIntegral n) of
   SomeNat proxy -> SomeSNat64 (proxyToSNat64 proxy)
 
 --------------------------------------------------------------------------------
+-- * sanity checking
+
+checkSomeSNat :: SomeSNat -> String
+checkSomeSNat some = case some of
+  SomeSNat snat -> case ( snat , natVal (proxyOfSNat snat) ) of
+    (SNat value , tyval) -> "[" ++ show value ++ "=" ++ show tyval ++ "]"
+
+checkSomeSNat64 :: SomeSNat64 -> String
+checkSomeSNat64 some = case some of
+  SomeSNat64 snat -> case ( snat , natVal (proxyOfSNat64 snat) ) of
+    (SNat64 value , tyval) -> "[" ++ show value ++ "=" ++ show tyval ++ "]"
+
+
+--------------------------------------------------------------------------------
+   

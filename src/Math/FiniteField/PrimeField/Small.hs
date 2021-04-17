@@ -23,6 +23,7 @@ import GHC.TypeNats (Nat)
 import Math.FiniteField.Primes
 import Math.FiniteField.TypeLevel
 import Math.FiniteField.Class 
+import Math.FiniteField.Conway ( lookupConwayPrimRoot_ )
 
 import qualified Math.FiniteField.PrimeField.Small.Raw as Raw
 
@@ -56,6 +57,11 @@ modpInteger x p = fromIntegral (mod x (fromIntegral (fromSmallPrime p)))
 modpSigned :: Int64 -> IsSmallPrime p -> Int64
 modpSigned x p = mod x (fromSmallPrimeSigned p)
 
+primRoot :: IsSmallPrime p -> Fp p 
+primRoot p = case lookupConwayPrimRoot_ (fromIntegral (fromSmallPrime p)) of
+  Just g     -> fp p (fromIntegral g)
+  Nothing    -> error "PrimeField/Small/Fp/primRoot: primitive generator not found in the Conway table"
+
 -- | Enumarte all field elements
 enumerateFp :: IsSmallPrime p -> [Fp p]
 enumerateFp p = [ Fp p k | k <- [0..fromSmallPrime p-1] ]
@@ -69,7 +75,7 @@ instance Show (Fp p) where
   show (Fp p k) = "(" ++ show k ++ " mod " ++ show (fromSmallPrime p) ++ ")"
 
 instance Num (Fp p) where
-  fromInteger = error "Fp/fromInteger: cannot be defined; use `embed` instead" 
+  fromInteger = error "PrimeField/Small/Fp/fromInteger: cannot be defined; use `embed` instead" 
   negate (Fp p x) = Fp p (Raw.neg (fromSmallPrime p) x)
   (+) (Fp p x) (Fp _ y) = Fp p (Raw.add (fromSmallPrime p) x y)
   (-) (Fp p x) (Fp _ y) = Fp p (Raw.sub (fromSmallPrime p) x y)
@@ -78,7 +84,7 @@ instance Num (Fp p) where
   signum (Fp p _) = Fp p 1
 
 instance Fractional (Fp p) where
-  fromRational = error "Fp/fromRational: cannot be defined; use `embed` instead" 
+  fromRational = error "PrimeField/Small/Fp/fromRational: cannot be defined; use `embed` instead" 
   recip (Fp p x)          = Fp p (Raw.inv (fromSmallPrime p) x)
   (/)   (Fp p x) (Fp _ y) = Fp p (Raw.div (fromSmallPrime p) x y)
 
@@ -90,7 +96,7 @@ instance Field (Fp p) where
   enumerate        p = let q = fromSmallPrime p in [ fp p k | k<-[0..q-1] ]
   embed          w x = fp w (fromInteger  x)
   embedSmall     w x = fp w (fromIntegral x)
-  primGen            = error "PrimeField/Small/Fp: primGen: not implemented"
+  primGen            = primRoot
   witnessOf          = fpWitness
   power              = fpPow
   powerSmall     x e = fpPow_ x (fromIntegral e)

@@ -76,7 +76,7 @@ prefix no_entries = unlines
   , "uint32_t conway_table[];"
   , ""
   , "uint32_t  get_conway_table_size() { return " ++ show no_entries ++ " ; }"
-  , "uint32_t *get_conway_table_ptr()  { return &conway_table ; }"
+  , "uint32_t *get_conway_table_ptr()  { return conway_table ; }"
   , ""
   , "uint32_t conway_table[] = "
   ]

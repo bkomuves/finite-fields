@@ -28,6 +28,13 @@ pairsWith f = go where
 --------------------------------------------------------------------------------
 -- * lists
 
+longZipWith :: a -> b -> (a -> b -> c) -> [a] -> [b] -> [c]
+longZipWith !x0 !y0 !f = go where
+  go (x:xs) (y:ys) = f x  y  : go xs ys
+  go []     (y:ys) = f x0 y  : go [] ys
+  go (x:xs) []     = f x  y0 : go xs []
+  go _      _      = []
+
 {-# SPECIALIZE sum' :: [Int]     -> Int     #-}
 {-# SPECIALIZE sum' :: [Integer] -> Integer #-}
 sum' :: Num a => [a] -> a

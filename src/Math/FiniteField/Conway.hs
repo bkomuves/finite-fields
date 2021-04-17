@@ -4,7 +4,7 @@
 -- The data is from <http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html>
 --
 
-{-# LANGUAGE ForeignFunctionInterface, StandaloneDeriving #-}
+{-# LANGUAGE ForeignFunctionInterface, StandaloneDeriving, BangPatterns #-}
 {-# LANGUAGE GADTs, ExistentialQuantification, DataKinds, KindSignatures #-}
 
 module Math.FiniteField.Conway where
@@ -14,6 +14,7 @@ module Math.FiniteField.Conway where
 import Data.Word
 import Data.Bits
 
+import Data.Proxy
 import GHC.TypeNats
 
 import qualified Data.IntMap.Strict as IntMap
@@ -51,6 +52,9 @@ deriving instance Show SomeConwayPoly
 newtype HasConwayPoly (p :: Nat) (m :: Nat) where
   ConwayWitness :: Ptr Word32 -> HasConwayPoly p m
 
+conwayProxies :: HasConwayPoly p m -> (Proxy p, Proxy m)
+conwayProxies _ = (Proxy, Proxy)
+
 instance Show (HasConwayPoly p m) where
   show witness = "ConwayPoly[" ++ show p ++ "^" ++ show m ++ "]" where
     (p,m) = conwayParams witness
@@ -78,6 +82,10 @@ conwayParams (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (p,m) <- getConwayEntryParams ptr
   return (fromIntegral p, fromIntegral m)
 
+conwayParams' :: HasConwayPoly p m -> (SNat64 p, SNat64 m)
+conwayParams' witness = (SNat64 p, SNat64 (fromIntegral m)) where
+  (p,m) = conwayParams witness
+
 conwayCoefficients :: HasConwayPoly p m -> [Word64]
 conwayCoefficients (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (_,_,list) <- marshalConwayEntry ptr
@@ -86,10 +94,27 @@ conwayCoefficients (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
 fromConwayPoly :: HasConwayPoly p m -> Ptr Word32
 fromConwayPoly (ConwayWitness ptr) = ptr
 
--- | Usage: @lookupConwayPoly p m@ for @q = p^m@
-lookupConwayPoly :: Int -> Int -> Maybe SomeConwayPoly
-lookupConwayPoly p m = case IntMap.lookup (encodePrimeExpo p m) (fromConwayTable theConwayTable) of
-  Nothing  -> Nothing
-  Just ptr -> Just (SomeConwayPoly (ConwayWitness ptr))
+-- | Usage: @lookupConwayPoly sp sm@ for @q = p^m@
+lookupConwayPoly :: SNat64 p -> SNat64 m -> Maybe (HasConwayPoly p m)
+lookupConwayPoly !sp !sm = 
+  let p = fromIntegral (fromSNat64 sp)
+      m = fromIntegral (fromSNat64 sm)
+  in case IntMap.lookup (encodePrimeExpo p m) (fromConwayTable theConwayTable) of
+       Nothing  -> Nothing
+       Just ptr -> Just (ConwayWitness ptr)
+
+-- | Usage: @lookupSomeConwayPoly p m@ for @q = p^m@
+lookupSomeConwayPoly :: Int -> Int -> Maybe SomeConwayPoly
+lookupSomeConwayPoly !p !m = case (someSNat64 (fromIntegral p) , someSNat64 (fromIntegral m)) of
+  (SomeSNat64 sp , SomeSNat64 sm) -> SomeConwayPoly <$> lookupConwayPoly sp sm
+
+-- | We have some Conway polynomials for @m=1@ too; the roots of 
+-- these linear polynomials are primitive roots in @F_p@
+lookupConwayPrimRoot_ :: Int -> Maybe Word64
+lookupConwayPrimRoot_ !p = case IntMap.lookup (encodePrimeExpo p 1) (fromConwayTable theConwayTable) of
+  Nothing   -> Nothing
+  Just ptr  -> case (Unsafe.unsafePerformIO $ marshalConwayEntry ptr) of
+    (_,_,[c,1])  -> Just (fromIntegral p - fromIntegral c)
+    _            -> error "lookupConwayPrimRoot: fatal error (should not happen)" 
 
 --------------------------------------------------------------------------------

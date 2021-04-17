@@ -28,8 +28,8 @@
 
 module Math.FiniteField.TypeLevel
   ( -- * Singleton types
-    SNat   , fromSNat   , proxyToSNat
-  , SNat64 , fromSNat64 , proxyToSNat64
+    SNat   , fromSNat   , proxyOfSNat   , proxyToSNat   
+  , SNat64 , fromSNat64 , proxyOfSNat64 , proxyToSNat64
     -- * Creating singleton types
   , SomeSNat(..) , someSNat , SomeSNat64(..) , someSNat64 , someSNat64_
     -- * Small numbers
@@ -43,6 +43,8 @@ module Math.FiniteField.TypeLevel
   , smallPrimeIsPrime , smallPrimeIsSmall , mkSmallPrime
     -- * Proxy
   , proxyOf, proxyOf1
+    -- * Sanity checking
+  , checkSomeSNat , checkSomeSNat64
   ) 
   where
 
