@@ -29,12 +29,17 @@ import qualified Math.FiniteField.PrimeField.Small.Raw as Raw
 
 --------------------------------------------------------------------------------
 
+-- | A witness for the existence of the prime field @F_p@
+newtype WitnessFp (p :: Nat) 
+  = WitnessFp { fromWitnessFp :: IsSmallPrime p }
+  deriving Show
+
 -- | An element of the prime field @F_p@
 data Fp (p :: Nat) 
   = Fp {-# UNPACK #-} !(IsSmallPrime p) {-# UNPACK #-} !Word64
 
-fpWitness :: Fp p -> IsSmallPrime p
-fpWitness (Fp p _) = p
+fpWitness :: Fp p -> WitnessFp p
+fpWitness (Fp p _) = WitnessFp p
 
 -- | Constructing elements
 fp :: IsSmallPrime p -> Word64 -> Fp p
@@ -89,14 +94,14 @@ instance Fractional (Fp p) where
   (/)   (Fp p x) (Fp _ y) = Fp p (Raw.div (fromSmallPrime p) x y)
 
 instance Field (Fp p) where
-  type Witness (Fp p) = IsSmallPrime p
-  characteristic _ p = fromSmallPrimeInteger p
-  dimension      _ _ = 1
-  fieldSize      _ p = fromSmallPrimeInteger p
-  enumerate        p = let q = fromSmallPrime p in [ fp p k | k<-[0..q-1] ]
-  embed          w x = fp w (fromInteger  x)
-  embedSmall     w x = fp w (fromIntegral x)
-  primGen            = primRoot
+  type Witness (Fp p) = WitnessFp p
+  characteristic   w = case w of { WitnessFp p -> fromSmallPrimeInteger p }
+  dimension        _ = 1
+  fieldSize        w = case w of { WitnessFp p -> fromSmallPrimeInteger p }
+  enumerate        w = case w of { WitnessFp p -> let q = fromSmallPrime p in [ fp p k | k<-[0..q-1] ] }
+  embed          w x = fp (fromWitnessFp w) (fromInteger  x)
+  embedSmall     w x = fp (fromWitnessFp w) (fromIntegral x)
+  primGen          w = primRoot (fromWitnessFp w)
   witnessOf          = fpWitness
   power              = fpPow
   powerSmall     x e = fpPow_ x (fromIntegral e)

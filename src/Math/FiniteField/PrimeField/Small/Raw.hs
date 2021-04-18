@@ -1,7 +1,7 @@
 
 -- | Small prime fields (up to @p < 2^31@), without type safety.
 --
--- This module is considered internal, but I prefer to expose everything.
+-- This module is considered internal.
 --
 
 {-# LANGUAGE BangPatterns #-}

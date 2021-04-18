@@ -54,6 +54,9 @@ fromWitnessGF w = case w of
 
 --------------------------------------------------------------------------------  
 
+-- | An alias for @Fq p m@, that is, the elements of the Galois field of order @q = p^m@
+type GF p m = Fq p m
+
 -- | An element of the finite field of order @q = p^m@
 data Fq (p :: Nat) (m :: Nat) where
   Fp :: {-# UNPACK #-} !(IsSmallPrime  p  ) -> {-# UNPACK #-} !Word64          -> Fq p 1
@@ -123,9 +126,9 @@ instance Fractional (Fq p m) where
 
 instance Field (Fq p m) where
   type Witness (Fq p m) = WitnessGF p m
-  characteristic  _ w = fromIntegral (fst (fromWitnessGF w))
-  dimension       _ w = fromIntegral (snd (fromWitnessGF w))
-  fieldSize       _ w = case fromWitnessGF w of (p,m) -> (fromIntegral p :: Integer) ^ m
+  characteristic    w = fromIntegral (fst (fromWitnessGF w))
+  dimension         w = fromIntegral (snd (fromWitnessGF w))
+  fieldSize         w = case fromWitnessGF w of (p,m) -> (fromIntegral p :: Integer) ^ m
   enumerate         w = enumerateFq w
   witnessOf         x = fqWitness x
   embed           w x = fp w (fromInteger  x)

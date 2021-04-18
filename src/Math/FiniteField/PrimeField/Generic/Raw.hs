@@ -1,7 +1,7 @@
 
 -- | Prime fields without type safety, naive implementation using 'Integer'-s
 --
--- This module is considered internal, but I prefer to expose everything.
+-- This module is considered internal.
 
 
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures #-}

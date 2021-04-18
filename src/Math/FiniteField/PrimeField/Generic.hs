@@ -17,12 +17,17 @@ import qualified Math.FiniteField.PrimeField.Generic.Raw as Raw
 
 --------------------------------------------------------------------------------
 
+-- | A witness for the existence of the prime field @F_p@
+newtype WitnessFp (p :: Nat) 
+  = WitnessFp { fromWitnessFp :: IsPrime p }
+  deriving Show
+
 -- | An element of the prime field @F_p@ 
 data Fp (p :: Nat) 
   = Fp !(IsPrime p) !Integer
 
-fpWitness :: Fp p -> IsPrime p
-fpWitness (Fp p _) = p
+fpWitness :: Fp p -> WitnessFp p
+fpWitness (Fp p _) = WitnessFp p
 
 -- | Constructing elements
 fp :: IsPrime p -> Integer -> Fp p
@@ -31,7 +36,7 @@ fp !p !n
   | otherwise        = Fp p (mod n q)
   where
     !q = fromPrime p
-    
+
 -- | The order of the field
 fpOrder :: Fp p -> Integer
 fpOrder (Fp p _) = fromPrime p
@@ -46,7 +51,7 @@ instance Show (Fp p) where
   show (Fp p k) = "(" ++ show k ++ " mod " ++ show (fromPrime p) ++ ")"
 
 instance Num (Fp p) where
-  fromInteger = error "Fp/fromInteger: not defined; use `fp` instead" 
+  fromInteger = error "PrimeField/Generic/Fp/fromInteger: not defined; use `fp` instead" 
   negate (Fp p x) = Fp p (Raw.neg (fromPrime p) x)
   (+) (Fp p x) (Fp _ y) = Fp p (Raw.add (fromPrime p) x y)
   (-) (Fp p x) (Fp _ y) = Fp p (Raw.sub (fromPrime p) x y)
@@ -55,20 +60,20 @@ instance Num (Fp p) where
   signum (Fp p _) = Fp p 1
 
 instance Fractional (Fp p) where
-  fromRational = error "Fp/fromRational: not defined; use `fp` instead" 
+  fromRational = error "PrimeField/Generic/Fp/fromRational: not defined; use `fp` instead" 
   recip (Fp p x)          = Fp p (Raw.inv (fromPrime p) x)
   (/)   (Fp p x) (Fp _ y) = Fp p (Raw.div (fromPrime p) x y)
 
 instance Field (Fp p) where
-  type Witness (Fp p) = IsPrime p
-  characteristic _ p = fromPrime p
-  dimension      _ _ = 1
-  fieldSize      _ p = fromPrime p
-  enumerate        p = let q = fromPrime p in [ fp p k | k<-[0..q-1] ]
-  embed              = fp
-  primGen            = error "PrimeField/Generic/Fp: primGen: not implemented"
-  witnessOf          = fpWitness
-  power              = fpPow
+  type Witness (Fp p) = WitnessFp p
+  characteristic w = case w of { WitnessFp p -> fromPrime p }
+  dimension      _ = 1
+  fieldSize      w = case w of { WitnessFp p -> fromPrime p }
+  enumerate      w = case w of { WitnessFp p -> let q = fromPrime p in [ fp p k | k<-[0..q-1] ] }
+  embed        w x = fp (fromWitnessFp w) x
+  primGen          = error "PrimeField/Generic/Fp: primGen: not implemented"
+  witnessOf        = fpWitness
+  power            = fpPow
 
 --------------------------------------------------------------------------------
 -- * Nontrivial operations
