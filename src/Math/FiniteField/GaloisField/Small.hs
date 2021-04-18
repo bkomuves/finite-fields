@@ -17,7 +17,7 @@
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, GADTs, TypeFamilies #-}
 {-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
 
-module Math.FiniteField.Galois.Small where
+module Math.FiniteField.GaloisField.Small where
 
 --------------------------------------------------------------------------------
 
@@ -41,8 +41,8 @@ import Math.FiniteField.Conway
 import Math.FiniteField.Primes
 import Math.FiniteField.Misc
 
-import qualified Math.FiniteField.PrimeField.Small.Raw  as Raw
-import qualified Math.FiniteField.Galois.Small.Internal as Quo
+import qualified Math.FiniteField.PrimeField.Small.Raw       as Raw
+import qualified Math.FiniteField.GaloisField.Small.Internal as Quo
 
 --------------------------------------------------------------------------------  
 -- * Witness for the existence of GF(q^m)

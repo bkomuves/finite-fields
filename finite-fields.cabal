@@ -40,7 +40,7 @@ Library
                         Math.FiniteField.Class
                         Math.FiniteField.PrimeField.Generic
                         Math.FiniteField.PrimeField.Small
-                        Math.FiniteField.Galois.Small
+                        Math.FiniteField.GaloisField.Small
                         Math.FiniteField.Conway
                         Math.FiniteField.TypeLevel
                         Math.FiniteField.Primes
@@ -50,7 +50,7 @@ Library
                         Math.FiniteField.Conway.Internal
                         Math.FiniteField.PrimeField.Generic.Raw
                         Math.FiniteField.PrimeField.Small.Raw
-                        Math.FiniteField.Galois.Small.Internal
+                        Math.FiniteField.GaloisField.Small.Internal
                         Math.FiniteField.Misc
 
   Default-Language:     Haskell2010

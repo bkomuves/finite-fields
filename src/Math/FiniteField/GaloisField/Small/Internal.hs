@@ -4,7 +4,7 @@
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, GADTs #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 
-module Math.FiniteField.Galois.Small.Internal where
+module Math.FiniteField.GaloisField.Small.Internal where
 
 --------------------------------------------------------------------------------
 
