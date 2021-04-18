@@ -44,12 +44,15 @@ class (Eq f, Show f, Num f, Fractional f) => Field f where
 
 --------------------------------------------------------------------------------
 
+-- | The additive identity of the field
 zero :: Field f => Witness f -> f
 zero w = embedSmall w 0
 
+-- | The multiplicative identity of the field
 one :: Field f => Witness f -> f
 one w = embedSmall w 1
 
+-- | The multiplicate inverse (synonym for 'recip')
 inverse :: Field f => f -> f
 inverse = recip
 
@@ -60,7 +63,7 @@ enumPrimeField w = [ embedSmall w i | i<-[0..p-1] ] where
   p    = fromIntegral pbig :: Int
 
 -- | The nonzero elements in cyclic order, starting from the primitive generator
--- (of course it's only useful for very small fields)
+-- (of course this is only useful for very small fields)
 multGroup :: Field f => Witness f -> [f]    
 multGroup w = scanl1 (*) list where
   g    = primGen w

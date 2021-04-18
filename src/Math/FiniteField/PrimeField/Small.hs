@@ -11,6 +11,8 @@
 --
 
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, TypeFamilies #-}
+{-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
+
 module Math.FiniteField.PrimeField.Small where
 
 --------------------------------------------------------------------------------
@@ -33,6 +35,26 @@ import qualified Math.FiniteField.PrimeField.Small.Raw as Raw
 newtype WitnessFp (p :: Nat) 
   = WitnessFp { fromWitnessFp :: IsSmallPrime p }
   deriving Show
+
+data SomeWitnessFp 
+  = forall p. SomeWitnessFp (WitnessFp p) 
+
+deriving instance Show SomeWitnessFp
+
+-- | Note: currently this checks the primality of the input using
+-- trial division, so it's only practical for (very) small primes...
+--
+-- But you can use 'unsafeSmallPrimeField' to cheat.
+mkSmallPrimeField :: Int -> Maybe SomeWitnessFp
+mkSmallPrimeField p = case someSNat64 (fromIntegral p) of
+  SomeSNat64 sp -> (SomeWitnessFp . WitnessFp) <$> isSmallPrime sp 
+
+-- | You are responsible for guaranteeing that the input is a prime.
+unsafeSmallPrimeField :: Int -> SomeWitnessFp
+unsafeSmallPrimeField p = case someSNat64 (fromIntegral p) of
+  SomeSNat64 sp -> SomeWitnessFp (WitnessFp (believeMeItsASmallPrime sp))
+
+--------------------------------------------------------------------------------
 
 -- | An element of the prime field @F_p@
 data Fp (p :: Nat) 

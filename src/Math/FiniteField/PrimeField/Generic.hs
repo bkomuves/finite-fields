@@ -1,7 +1,9 @@
 
--- | Prime fields, naive implementation
+-- | Arbitrary prime fields, naive implementation
 
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, TypeFamilies #-}
+{-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
+
 module Math.FiniteField.PrimeField.Generic where
 
 --------------------------------------------------------------------------------
@@ -21,6 +23,26 @@ import qualified Math.FiniteField.PrimeField.Generic.Raw as Raw
 newtype WitnessFp (p :: Nat) 
   = WitnessFp { fromWitnessFp :: IsPrime p }
   deriving Show
+
+data SomeWitnessFp 
+  = forall p. SomeWitnessFp (WitnessFp p) 
+
+deriving instance Show SomeWitnessFp
+
+-- | Note: currently this checks the primality of the input using
+-- trial division, so it's not really practical...
+--
+-- But you can use 'unsafePrimeField' to cheat.
+mkPrimeField :: Integer -> Maybe SomeWitnessFp
+mkPrimeField p = case someSNat p of
+  SomeSNat sp -> (SomeWitnessFp . WitnessFp) <$> isPrime sp 
+
+-- | You are responsible for guaranteeing that the input is a prime.
+unsafePrimeField :: Integer -> SomeWitnessFp
+unsafePrimeField p = case someSNat p of
+  SomeSNat sp -> SomeWitnessFp (WitnessFp (believeMeItsPrime sp))
+
+--------------------------------------------------------------------------------
 
 -- | An element of the prime field @F_p@ 
 data Fp (p :: Nat) 

@@ -15,6 +15,8 @@
 --
 
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, GADTs, TypeFamilies #-}
+{-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
+
 module Math.FiniteField.Galois.Small where
 
 --------------------------------------------------------------------------------
@@ -41,16 +43,32 @@ import qualified Math.FiniteField.PrimeField.Small.Raw  as Raw
 import qualified Math.FiniteField.Galois.Small.Internal as Quo
 
 --------------------------------------------------------------------------------  
+-- * Witness for the existence of GF(q^m)
 
 -- | We need either a Conway polynomial, or in the @m=1@ case, a proof that @p@ is prime
 data WitnessGF (p :: Nat) (m :: Nat) where
   WitnessFp :: IsSmallPrime  p   -> WitnessGF p 1
   WitnessFq :: HasConwayPoly p m -> WitnessGF p m
 
-fromWitnessGF :: WitnessGF p m -> (Word64,Int)
-fromWitnessGF w = case w of
+deriving instance Show (WitnessGF p m)
+
+gfParams :: WitnessGF p m -> (Word64,Int)
+gfParams w = case w of
   WitnessFp p -> (fromSmallPrime p, 1)
   WitnessFq c -> conwayParams c
+
+data SomeWitnessGF 
+  = forall p m. SomeWitnessGF (WitnessGF p m)
+
+deriving instance Show SomeWitnessGF
+
+mkGaloisField :: Int -> Int -> Maybe SomeWitnessGF
+mkGaloisField p m = case m of
+  1  -> case someSNat64 (fromIntegral p) of 
+          SomeSNat64 sp -> (SomeWitnessGF . WitnessFp) <$> isSmallPrime sp 
+  _  -> case lookupSomeConwayPoly p m of 
+          Nothing -> Nothing
+          Just (SomeConwayPoly cw) -> Just (SomeWitnessGF (WitnessFq cw))
 
 --------------------------------------------------------------------------------  
 
@@ -126,9 +144,9 @@ instance Fractional (Fq p m) where
 
 instance Field (Fq p m) where
   type Witness (Fq p m) = WitnessGF p m
-  characteristic    w = fromIntegral (fst (fromWitnessGF w))
-  dimension         w = fromIntegral (snd (fromWitnessGF w))
-  fieldSize         w = case fromWitnessGF w of (p,m) -> (fromIntegral p :: Integer) ^ m
+  characteristic    w = fromIntegral (fst (gfParams w))
+  dimension         w = fromIntegral (snd (gfParams w))
+  fieldSize         w = case gfParams w of (p,m) -> (fromIntegral p :: Integer) ^ m
   enumerate         w = enumerateFq w
   witnessOf         x = fqWitness x
   embed           w x = fp w (fromInteger  x)

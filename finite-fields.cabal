@@ -39,45 +39,45 @@ Library
   Exposed-Modules:     
                         Math.FiniteField.Class
                         Math.FiniteField.PrimeField.Generic
-                        Math.FiniteField.PrimeField.Generic.Raw
                         Math.FiniteField.PrimeField.Small
-                        Math.FiniteField.PrimeField.Small.Raw
                         Math.FiniteField.Galois.Small
-                        Math.FiniteField.Galois.Small.Internal
                         Math.FiniteField.Conway
-                        Math.FiniteField.Conway.Internal
                         Math.FiniteField.Primes
                         Math.FiniteField.TypeLevel
                         Math.FiniteField.Sign
                         Math.FiniteField.Misc
 
-  Other-Modules:       Math.FiniteField.TypeLevel.Singleton
+  Other-Modules:        Math.FiniteField.TypeLevel.Singleton
+                        Math.FiniteField.Conway.Internal
+                        Math.FiniteField.PrimeField.Generic.Raw
+                        Math.FiniteField.PrimeField.Small.Raw
+                        Math.FiniteField.Galois.Small.Internal
 
-  Default-Language:    Haskell2010
-  Default-Extensions:  CPP, BangPatterns, KindSignatures, DataKinds
+  Default-Language:     Haskell2010
+  Default-Extensions:   CPP, BangPatterns, KindSignatures, DataKinds
 
-  Hs-Source-Dirs:      src
+  Hs-Source-Dirs:       src
 
-  C-Sources:           cbits/conway_table.c 
+  C-Sources:            cbits/conway_table.c 
 
-  ghc-options:         -fwarn-tabs -fno-warn-unused-matches -fno-warn-name-shadowing -fno-warn-unused-imports
+  ghc-options:          -fwarn-tabs -fno-warn-unused-matches -fno-warn-name-shadowing -fno-warn-unused-imports
 
 --------------------------------------------------------------------------------
 
 -- test-suite finite-fields-tests
 --                       
---   type:                exitcode-stdio-1.0
---   hs-source-dirs:      test
---   main-is:             TestSuite.hs
+--   type:                 exitcode-stdio-1.0
+--   hs-source-dirs:       test
+--   main-is:              TestSuite.hs
 -- 
---   other-modules:       Test.FieldProperties
+--   other-modules:        Test.FieldProperties
 -- 
---   Build-Depends:       base >= 4 && < 5, random, finite-fields,
---                        tasty, 
---                        tasty-hunit,
---                        QuickCheck >= 2  , tasty-quickcheck, 
---                        smallcheck >= 1.2, tasty-smallcheck
+--   Build-Depends:        base >= 4 && < 5, random, finite-fields,
+--                         tasty, 
+--                         tasty-hunit,
+--                         QuickCheck >= 2  , tasty-quickcheck, 
+--                         smallcheck >= 1.2, tasty-smallcheck
 -- 
---   Default-Language:    Haskell2010
---   Default-Extensions:  CPP, BangPatterns, KindSignatures, DataKinds
+--   Default-Language:     Haskell2010
+--   Default-Extensions:   CPP, BangPatterns, KindSignatures, DataKinds
 
