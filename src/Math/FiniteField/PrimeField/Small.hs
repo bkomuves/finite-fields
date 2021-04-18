@@ -20,7 +20,10 @@ module Math.FiniteField.PrimeField.Small where
 import Data.Bits
 import Data.Int
 import Data.Word
+
 import GHC.TypeNats (Nat)
+
+import System.Random ( RandomGen , randomR )
 
 import Math.FiniteField.Primes
 import Math.FiniteField.TypeLevel
@@ -71,6 +74,12 @@ fp !p !n
   where
     !q = fromSmallPrime p
 
+randomFp :: RandomGen gen => IsSmallPrime p -> gen -> (Fp p, gen)
+randomFp !p !gen = case randomR (0,q-1) gen of { (x, gen') -> (Fp p x, gen') } where !q = fromSmallPrime p
+
+randomInvFp :: RandomGen gen => IsSmallPrime p -> gen -> (Fp p, gen)
+randomInvFp !p !gen = case randomR (1,q-1) gen of { (x, gen') -> (Fp p x, gen') } where !q = fromSmallPrime p
+
 -- | The order of the field
 fpOrder :: Fp p -> Word64
 fpOrder (Fp p _) = fromIntegral (fromSmallPrime p)
@@ -117,16 +126,22 @@ instance Fractional (Fp p) where
 
 instance Field (Fp p) where
   type Witness (Fp p) = WitnessFp p
-  characteristic   w = case w of { WitnessFp p -> fromSmallPrimeInteger p }
-  dimension        _ = 1
-  fieldSize        w = case w of { WitnessFp p -> fromSmallPrimeInteger p }
-  enumerate        w = case w of { WitnessFp p -> let q = fromSmallPrime p in [ fp p k | k<-[0..q-1] ] }
-  embed          w x = fp (fromWitnessFp w) (fromInteger  x)
-  embedSmall     w x = fp (fromWitnessFp w) (fromIntegral x)
-  primGen          w = primRoot (fromWitnessFp w)
-  witnessOf          = fpWitness
-  power              = fpPow
-  powerSmall     x e = fpPow_ x (fromIntegral e)
+  characteristic     w = case w of { WitnessFp p -> fromSmallPrimeInteger p }
+  dimension          _ = 1
+  fieldSize          w = case w of { WitnessFp p -> fromSmallPrimeInteger p }
+  enumerate          w = case w of { WitnessFp p -> let q = fromSmallPrime p in [ fp p k | k<-[0..q-1] ] }
+  embed            w x = fp (fromWitnessFp w) (fromInteger  x)
+  embedSmall       w x = fp (fromWitnessFp w) (fromIntegral x)
+  primGen            w = primRoot (fromWitnessFp w)
+  witnessOf            = fpWitness
+  power                = fpPow
+  powerSmall       x e = fpPow_ x (fromIntegral e)
+  randomFieldElem    w = case w of { WitnessFp p -> randomFp    p } 
+  randomInvertible   w = case w of { WitnessFp p -> randomInvFp p }
+  zero w = Fp (fromWitnessFp w) 0
+  one  w = Fp (fromWitnessFp w) 1
+  isZero (Fp _ x) = (x == 0)
+  isOne  (Fp _ x) = (x == 1)
 
 --------------------------------------------------------------------------------
 -- * Nontrivial operations

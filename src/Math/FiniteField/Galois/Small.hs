@@ -33,6 +33,8 @@ import GHC.TypeNats (Nat)
 import Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as Vec
 
+import System.Random ( RandomGen , randomR )
+
 import Math.FiniteField.Class 
 import Math.FiniteField.TypeLevel
 import Math.FiniteField.Conway
@@ -103,6 +105,24 @@ fp witness x =
       p = fromSmallPrime prime 
       y = if x >= 0 && x < p then x else mod x p
 
+fpIsZero :: Fq p m -> Bool
+fpIsZero (Fp _ x) = x == 0
+fpIsZero (Fq _ v) = all (==0) (Vec.toList v)
+
+fpIsOne :: Fq p m -> Bool
+fpIsOne (Fp _ x) = x == 1
+fpIsOne (Fq _ v) = case Vec.toList v of { (x:xs) -> x==1 && all (==0) xs }
+
+randomFq :: RandomGen gen => WitnessGF p m -> gen -> (Fq p m, gen) 
+randomFq witness gen = case witness of
+  WitnessFp p -> 
+    let !q = fromSmallPrime p 
+    in  case randomR (0,q-1) gen of { (x, gen') -> (Fp p x, gen') } 
+  WitnessFq c -> 
+    let !(p,m) = conwayParams c
+    in  case mapAccumL (\ !g _ -> swap (randomR (0,p-1) g) ) gen [1..m] of
+          (gen' , xs) -> ( Fq c (Vec.fromList (map fromIntegral xs)) , gen' )
+
 -- | The field element corresponding to the polynomial @X@ (which is a primitive generator)
 gen :: HasConwayPoly p m -> Fq p m
 gen conway = gen' conway 1
@@ -113,6 +133,15 @@ gen' conway x = Fq conway (Vec.fromListN m (0 : y : replicate (m-2) 0)) where
   (p,m) = conwayParams conway
   y = fromIntegral (mod x p) :: Word32
 
+primGenFq :: WitnessGF p m -> Fq p m 
+primGenFq !w = case w of
+  WitnessFq cw -> gen cw
+  WitnessFp pw -> prim where
+    !p   = fromSmallPrime pw
+    prim = case lookupConwayPrimRoot_ (fromIntegral p) of
+      Just g       -> embedSmall w (fromIntegral g)
+      Nothing      -> error "GaloisField/Fp/primGen: primitive root not found in the Conway polynomial table"
+
 --------------------------------------------------------------------------------  
 
 instance Eq (Fq p m) where
@@ -121,12 +150,12 @@ instance Eq (Fq p m) where
 
 instance Show (Fq p m) where
   show (Fp prime   x  ) = "<" ++ show x ++ " mod " ++ show (fromSmallPrime prime) ++ ">"
-  show (Fq witness vec) = "<" ++ intercalate " + " list ++ " mod " ++ show p ++ ">" where
+  show (Fq witness vec) = "<" ++ intercalate "+" list ++ " mod " ++ show p ++ ">" where
     (p,m) = conwayParams witness
     list = zipWith f [0..] (Vec.toList vec) 
     f  0 !v = show v
-    f  1 !v = show v ++ "*X"
-    f !e !v = show v ++ "*X^" ++ show e
+    f  1 !v = show v ++ "*g"
+    f !e !v = show v ++ "*g^" ++ show e
 
 instance Num (Fq p m) where
   fromInteger = error "Fq/fromInteger: cannot be defined; use `embed` instead" 
@@ -144,21 +173,20 @@ instance Fractional (Fq p m) where
 
 instance Field (Fq p m) where
   type Witness (Fq p m) = WitnessGF p m
-  characteristic    w = fromIntegral (fst (gfParams w))
-  dimension         w = fromIntegral (snd (gfParams w))
-  fieldSize         w = case gfParams w of (p,m) -> (fromIntegral p :: Integer) ^ m
-  enumerate         w = enumerateFq w
-  witnessOf         x = fqWitness x
-  embed           w x = fp w (fromInteger  x)
-  embedSmall      w x = fp w (fromIntegral x)
-  -- power               = error "Fq/power: not implemented yet" -- fqPow
-  primGen           w = case w of
-                          WitnessFq cw -> gen cw
-                          WitnessFp pw -> prim where
-                            p    = fromSmallPrime pw
-                            prim = case lookupConwayPrimRoot_ (fromIntegral p) of
-                              Just g       -> embedSmall w (fromIntegral g)
-                              Nothing      -> error "Fp/primGen: primitive generator not found in the Conway table"
+  characteristic   !w = fromIntegral (fst (gfParams w))
+  dimension        !w = fromIntegral (snd (gfParams w))
+  fieldSize        !w = case gfParams w of (p,m) -> (fromIntegral p :: Integer) ^ m
+  enumerate        !w = enumerateFq w
+  witnessOf        !x = fqWitness x
+  embed         !w !x = fp w (fromInteger  x)
+  embedSmall    !w !x = fp w (fromIntegral x)
+  randomFieldElem  !w = randomFq w
+  primGen          !w = primGenFq w
+
+  zero w = fp w 0
+  one  w = fp w 1
+  isZero = fpIsZero
+  isOne  = fpIsOne
 
 --------------------------------------------------------------------------------  
 -- * Enumerations

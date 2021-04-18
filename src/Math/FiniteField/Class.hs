@@ -9,6 +9,8 @@ module Math.FiniteField.Class where
 import Data.Bits
 import Data.List
 
+import System.Random ( RandomGen )
+
 -- import Data.Proxy
 -- import Math.FiniteField.TypeLevel (proxyOf)
 
@@ -18,39 +20,52 @@ class (Eq f, Show f, Num f, Fractional f) => Field f where
   -- | witness for the existence of the field (this is an injective type family!) 
   type Witness f = r | r -> f                 
   -- | the prime characteristic
-  characteristic :: Witness f -> Integer   
+  characteristic   :: Witness f -> Integer   
   -- | dimension over the prime field (the exponent @m@ in @q=p^m@)
-  dimension      :: Witness f -> Integer   
+  dimension        :: Witness f -> Integer   
   -- | the size (or order) of the field
-  fieldSize      :: Witness f -> Integer   
-  -- | list of field elements (of course it's only useful for very small fields)
-  enumerate      :: Witness f -> [f]                  
+  fieldSize        :: Witness f -> Integer   
+  -- | The additive identity of the field
+  zero             :: Witness f -> f
+  -- | The multiplicative identity of the field
+  one              :: Witness f -> f
+  -- | check for equality with the additive identity
+  isZero           :: f -> Bool
+  -- | check for equality with the multiplicative identity
+  isOne            :: f -> Bool
   -- | an element of the prime field
-  embed          :: Witness f -> Integer -> f         
-  embedSmall     :: Witness f -> Int     -> f    
+  embed            :: Witness f -> Integer -> f         
+  embedSmall       :: Witness f -> Int     -> f   
+  -- | a uniformly random field element
+  randomFieldElem  :: RandomGen gen => Witness f -> gen -> (f,gen) 
+  -- | a random invertible element
+  randomInvertible :: RandomGen gen => Witness f -> gen -> (f,gen) 
   -- | a primitive generator
-  primGen        :: Witness f -> f                    
-  -- | extract the witness from a field element
-  witnessOf      :: f -> Witness f                    
+  primGen          :: Witness f -> f                    
+  -- | extract t  he witness from a field element
+  witnessOf        :: f -> Witness f                    
   -- | exponentiation 
-  power          :: f -> Integer -> f                 
-  powerSmall     :: f -> Int     -> f            
+  power            :: f -> Integer -> f                 
+  powerSmall       :: f -> Int     -> f            
+  -- | list of field elements (of course it's only useful for very small fields)
+  enumerate        :: Witness f -> [f]                  
 
   -- default implementations
-  embedSmall w x = embed w (fromIntegral x)
-  powerSmall x e = power x (fromIntegral e)
-  fieldSize    w = characteristic w ^ dimension w
-  power          = powerDefault
+
+  embedSmall !w !x = embed w (fromIntegral x)
+  powerSmall !x !e = power x (fromIntegral e)
+  fieldSize  !w    = characteristic w ^ dimension w
+  power            = powerDefault
+
+  zero       !w    = embedSmall w 0
+  one        !w    = embedSmall w 1
+  -- isZero     !x    = (x == zero w)   -- we don't have a witness available here...
+  -- isOne      !x    = (x == one  w)
+
+  randomInvertible !w !g = case randomFieldElem w g of 
+    (x,g') -> if isZero x then randomInvertible w g' else (x,g')
 
 --------------------------------------------------------------------------------
-
--- | The additive identity of the field
-zero :: Field f => Witness f -> f
-zero w = embedSmall w 0
-
--- | The multiplicative identity of the field
-one :: Field f => Witness f -> f
-one w = embedSmall w 1
 
 -- | The multiplicate inverse (synonym for 'recip')
 inverse :: Field f => f -> f

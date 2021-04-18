@@ -9,7 +9,10 @@ module Math.FiniteField.PrimeField.Generic where
 --------------------------------------------------------------------------------
 
 import Data.Bits
+
 import GHC.TypeNats (Nat)
+
+import System.Random ( RandomGen , randomR )
 
 import Math.FiniteField.Primes
 import Math.FiniteField.TypeLevel
@@ -59,6 +62,12 @@ fp !p !n
   where
     !q = fromPrime p
 
+randomFp :: RandomGen gen => IsPrime p -> gen -> (Fp p, gen)
+randomFp !p !gen = case randomR (0,q-1) gen of { (x, gen') -> (Fp p x, gen') } where !q = fromPrime p
+
+randomInvFp :: RandomGen gen => IsPrime p -> gen -> (Fp p, gen)
+randomInvFp !p !gen = case randomR (1,q-1) gen of { (x, gen') -> (Fp p x, gen') } where !q = fromPrime p
+
 -- | The order of the field
 fpOrder :: Fp p -> Integer
 fpOrder (Fp p _) = fromPrime p
@@ -88,14 +97,20 @@ instance Fractional (Fp p) where
 
 instance Field (Fp p) where
   type Witness (Fp p) = WitnessFp p
-  characteristic w = case w of { WitnessFp p -> fromPrime p }
-  dimension      _ = 1
-  fieldSize      w = case w of { WitnessFp p -> fromPrime p }
-  enumerate      w = case w of { WitnessFp p -> let q = fromPrime p in [ fp p k | k<-[0..q-1] ] }
-  embed        w x = fp (fromWitnessFp w) x
-  primGen          = error "PrimeField/Generic/Fp: primGen: not implemented"
-  witnessOf        = fpWitness
-  power            = fpPow
+  characteristic    w = case w of { WitnessFp p -> fromPrime p }
+  dimension         _ = 1
+  fieldSize         w = case w of { WitnessFp p -> fromPrime p }
+  enumerate         w = case w of { WitnessFp p -> let q = fromPrime p in [ fp p k | k<-[0..q-1] ] }
+  embed           w x = fp (fromWitnessFp w) x
+  primGen             = error "PrimeField/Generic/Fp: primGen: not implemented"
+  witnessOf           = fpWitness
+  power               = fpPow
+  randomFieldElem   w = case w of { WitnessFp p -> randomFp    p } 
+  randomInvertible  w = case w of { WitnessFp p -> randomInvFp p }
+  zero w = Fp (fromWitnessFp w) 0
+  one  w = Fp (fromWitnessFp w) 1
+  isZero (Fp _ x) = (x == 0)
+  isOne  (Fp _ x) = (x == 1)
 
 --------------------------------------------------------------------------------
 -- * Nontrivial operations

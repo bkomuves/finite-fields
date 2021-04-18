@@ -42,16 +42,16 @@ Library
                         Math.FiniteField.PrimeField.Small
                         Math.FiniteField.Galois.Small
                         Math.FiniteField.Conway
-                        Math.FiniteField.Primes
                         Math.FiniteField.TypeLevel
+                        Math.FiniteField.Primes
                         Math.FiniteField.Sign
-                        Math.FiniteField.Misc
 
   Other-Modules:        Math.FiniteField.TypeLevel.Singleton
                         Math.FiniteField.Conway.Internal
                         Math.FiniteField.PrimeField.Generic.Raw
                         Math.FiniteField.PrimeField.Small.Raw
                         Math.FiniteField.Galois.Small.Internal
+                        Math.FiniteField.Misc
 
   Default-Language:     Haskell2010
   Default-Extensions:   CPP, BangPatterns, KindSignatures, DataKinds
