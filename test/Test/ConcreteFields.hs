@@ -64,7 +64,36 @@ small_primefields =
   ]
 
 small_galoisfields :: [(String,TestField)]
-small_galoisfields = []
+small_galoisfields = 
+  [ -- p^1
+    ( "GF(2)"     , TestField fromGF_2    gf_2    ) 
+  , ( "GF(3)"     , TestField fromGF_3    gf_3    )
+  , ( "GF(5)"     , TestField fromGF_5    gf_5    )
+  , ( "GF(7)"     , TestField fromGF_7    gf_7    )
+  , ( "GF(17)"    , TestField fromGF_17   gf_17   )
+  , ( "GF(257)"   , TestField fromGF_257  gf_257  )
+    -- 2^m
+  , ( "GF(2^1)"   , TestField fromGF_2_1  gf_2_1  )
+  , ( "GF(2^2)"   , TestField fromGF_2_2  gf_2_2  )
+  , ( "GF(2^3)"   , TestField fromGF_2_3  gf_2_3  )
+  , ( "GF(2^4)"   , TestField fromGF_2_4  gf_2_4  )
+  , ( "GF(2^5)"   , TestField fromGF_2_5  gf_2_5  )
+  , ( "GF(2^6)"   , TestField fromGF_2_6  gf_2_6  )
+    -- 3^m
+  , ( "GF(3^1)"   , TestField fromGF_3_1  gf_3_1  )
+  , ( "GF(3^2)"   , TestField fromGF_3_2  gf_3_2  )
+  , ( "GF(3^3)"   , TestField fromGF_3_3  gf_3_3  )
+  , ( "GF(3^4)"   , TestField fromGF_3_4  gf_3_4  )
+  , ( "GF(3^5)"   , TestField fromGF_3_5  gf_3_5  )
+  , ( "GF(3^6)"   , TestField fromGF_3_6  gf_3_6  )
+    -- 5^m
+  , ( "GF(5^1)"   , TestField fromGF_5_1  gf_5_1  )
+  , ( "GF(5^2)"   , TestField fromGF_5_2  gf_5_2  )
+  , ( "GF(5^3)"   , TestField fromGF_5_3  gf_5_3  )
+  , ( "GF(5^4)"   , TestField fromGF_5_4  gf_5_4  )
+  , ( "GF(5^5)"   , TestField fromGF_5_5  gf_5_5  )
+  , ( "GF(5^6)"   , TestField fromGF_5_6  gf_5_6  )
+  ]
 
 --------------------------------------------------------------------------------
 
@@ -91,6 +120,34 @@ newtype S229    = S229    { fromS229    :: S.Fp  229   } deriving (Eq,Show)
 newtype S257    = S257    { fromS257    :: S.Fp  257   } deriving (Eq,Show) 
 newtype S7919   = S7919   { fromS7919   :: S.Fp  7919  } deriving (Eq,Show) 
 newtype S32003  = S32003  { fromS32003  :: S.Fp  32003 } deriving (Eq,Show) 
+
+newtype GF_2    = GF_2    { fromGF_2    :: G.GF 2   1  } deriving (Eq,Show) 
+newtype GF_3    = GF_3    { fromGF_3    :: G.GF 3   1  } deriving (Eq,Show) 
+newtype GF_5    = GF_5    { fromGF_5    :: G.GF 5   1  } deriving (Eq,Show) 
+newtype GF_7    = GF_7    { fromGF_7    :: G.GF 7   1  } deriving (Eq,Show) 
+newtype GF_17   = GF_17   { fromGF_17   :: G.GF 17  1  } deriving (Eq,Show) 
+newtype GF_257  = GF_257  { fromGF_257  :: G.GF 257 1  } deriving (Eq,Show) 
+
+newtype GF_2_1  = GF_2_1  { fromGF_2_1  :: G.GF 2 1    } deriving (Eq,Show) 
+newtype GF_2_2  = GF_2_2  { fromGF_2_2  :: G.GF 2 2    } deriving (Eq,Show) 
+newtype GF_2_3  = GF_2_3  { fromGF_2_3  :: G.GF 2 3    } deriving (Eq,Show) 
+newtype GF_2_4  = GF_2_4  { fromGF_2_4  :: G.GF 2 4    } deriving (Eq,Show) 
+newtype GF_2_5  = GF_2_5  { fromGF_2_5  :: G.GF 2 5    } deriving (Eq,Show) 
+newtype GF_2_6  = GF_2_6  { fromGF_2_6  :: G.GF 2 6    } deriving (Eq,Show) 
+
+newtype GF_3_1  = GF_3_1  { fromGF_3_1  :: G.GF 3 1    } deriving (Eq,Show) 
+newtype GF_3_2  = GF_3_2  { fromGF_3_2  :: G.GF 3 2    } deriving (Eq,Show) 
+newtype GF_3_3  = GF_3_3  { fromGF_3_3  :: G.GF 3 3    } deriving (Eq,Show) 
+newtype GF_3_4  = GF_3_4  { fromGF_3_4  :: G.GF 3 4    } deriving (Eq,Show) 
+newtype GF_3_5  = GF_3_5  { fromGF_3_5  :: G.GF 3 5    } deriving (Eq,Show) 
+newtype GF_3_6  = GF_3_6  { fromGF_3_6  :: G.GF 3 6    } deriving (Eq,Show) 
+
+newtype GF_5_1  = GF_5_1  { fromGF_5_1  :: G.GF 5 1    } deriving (Eq,Show) 
+newtype GF_5_2  = GF_5_2  { fromGF_5_2  :: G.GF 5 2    } deriving (Eq,Show) 
+newtype GF_5_3  = GF_5_3  { fromGF_5_3  :: G.GF 5 3    } deriving (Eq,Show) 
+newtype GF_5_4  = GF_5_4  { fromGF_5_4  :: G.GF 5 4    } deriving (Eq,Show) 
+newtype GF_5_5  = GF_5_5  { fromGF_5_5  :: G.GF 5 5    } deriving (Eq,Show) 
+newtype GF_5_6  = GF_5_6  { fromGF_5_6  :: G.GF 5 6    } deriving (Eq,Show) 
 
 --------------------------------------------------------------------------------
 
@@ -121,6 +178,34 @@ instance Arbitrary S257    where arbitrary = S257    <$> mkGen (randomFieldElem 
 instance Arbitrary S7919   where arbitrary = S7919   <$> mkGen (randomFieldElem s7919  )
 instance Arbitrary S32003  where arbitrary = S32003  <$> mkGen (randomFieldElem s32003 )
 
+instance Arbitrary GF_2    where arbitrary = GF_2    <$> mkGen (randomFieldElem gf_2   )
+instance Arbitrary GF_3    where arbitrary = GF_3    <$> mkGen (randomFieldElem gf_3   )
+instance Arbitrary GF_5    where arbitrary = GF_5    <$> mkGen (randomFieldElem gf_5   )
+instance Arbitrary GF_7    where arbitrary = GF_7    <$> mkGen (randomFieldElem gf_7   )
+instance Arbitrary GF_17   where arbitrary = GF_17   <$> mkGen (randomFieldElem gf_17  )
+instance Arbitrary GF_257  where arbitrary = GF_257  <$> mkGen (randomFieldElem gf_257 )
+
+instance Arbitrary GF_2_1  where arbitrary = GF_2_1  <$> mkGen (randomFieldElem gf_2_1 )
+instance Arbitrary GF_2_2  where arbitrary = GF_2_2  <$> mkGen (randomFieldElem gf_2_2 )
+instance Arbitrary GF_2_3  where arbitrary = GF_2_3  <$> mkGen (randomFieldElem gf_2_3 )
+instance Arbitrary GF_2_4  where arbitrary = GF_2_4  <$> mkGen (randomFieldElem gf_2_4 )
+instance Arbitrary GF_2_5  where arbitrary = GF_2_5  <$> mkGen (randomFieldElem gf_2_5 )
+instance Arbitrary GF_2_6  where arbitrary = GF_2_6  <$> mkGen (randomFieldElem gf_2_6 )
+
+instance Arbitrary GF_3_1  where arbitrary = GF_3_1  <$> mkGen (randomFieldElem gf_3_1 )
+instance Arbitrary GF_3_2  where arbitrary = GF_3_2  <$> mkGen (randomFieldElem gf_3_2 )
+instance Arbitrary GF_3_3  where arbitrary = GF_3_3  <$> mkGen (randomFieldElem gf_3_3 )
+instance Arbitrary GF_3_4  where arbitrary = GF_3_4  <$> mkGen (randomFieldElem gf_3_4 )
+instance Arbitrary GF_3_5  where arbitrary = GF_3_5  <$> mkGen (randomFieldElem gf_3_5 )
+instance Arbitrary GF_3_6  where arbitrary = GF_3_6  <$> mkGen (randomFieldElem gf_3_6 )
+
+instance Arbitrary GF_5_1  where arbitrary = GF_5_1  <$> mkGen (randomFieldElem gf_5_1 )
+instance Arbitrary GF_5_2  where arbitrary = GF_5_2  <$> mkGen (randomFieldElem gf_5_2 )
+instance Arbitrary GF_5_3  where arbitrary = GF_5_3  <$> mkGen (randomFieldElem gf_5_3 )
+instance Arbitrary GF_5_4  where arbitrary = GF_5_4  <$> mkGen (randomFieldElem gf_5_4 )
+instance Arbitrary GF_5_5  where arbitrary = GF_5_5  <$> mkGen (randomFieldElem gf_5_5 )
+instance Arbitrary GF_5_6  where arbitrary = GF_5_6  <$> mkGen (randomFieldElem gf_5_6 )
+
 instance Arbitrary (NonZero ZZ2    ) where arbitrary = (NonZero . ZZ2    ) <$> mkGen (randomInvertible zz2    )
 instance Arbitrary (NonZero ZZ3    ) where arbitrary = (NonZero . ZZ3    ) <$> mkGen (randomInvertible zz3    )
 instance Arbitrary (NonZero ZZ5    ) where arbitrary = (NonZero . ZZ5    ) <$> mkGen (randomInvertible zz5    )
@@ -144,6 +229,34 @@ instance Arbitrary (NonZero S229   ) where arbitrary = (NonZero . S229   ) <$> m
 instance Arbitrary (NonZero S257   ) where arbitrary = (NonZero . S257   ) <$> mkGen (randomInvertible s257   )
 instance Arbitrary (NonZero S7919  ) where arbitrary = (NonZero . S7919  ) <$> mkGen (randomInvertible s7919  )
 instance Arbitrary (NonZero S32003 ) where arbitrary = (NonZero . S32003 ) <$> mkGen (randomInvertible s32003 )
+
+instance Arbitrary (NonZero GF_2   ) where arbitrary = (NonZero . GF_2   ) <$> mkGen (randomInvertible gf_2   )
+instance Arbitrary (NonZero GF_3   ) where arbitrary = (NonZero . GF_3   ) <$> mkGen (randomInvertible gf_3   )
+instance Arbitrary (NonZero GF_5   ) where arbitrary = (NonZero . GF_5   ) <$> mkGen (randomInvertible gf_5   )
+instance Arbitrary (NonZero GF_7   ) where arbitrary = (NonZero . GF_7   ) <$> mkGen (randomInvertible gf_7   )
+instance Arbitrary (NonZero GF_17  ) where arbitrary = (NonZero . GF_17  ) <$> mkGen (randomInvertible gf_17  )
+instance Arbitrary (NonZero GF_257 ) where arbitrary = (NonZero . GF_257 ) <$> mkGen (randomInvertible gf_257 )
+
+instance Arbitrary (NonZero GF_2_1 ) where arbitrary = (NonZero . GF_2_1 ) <$> mkGen (randomInvertible gf_2_1 )
+instance Arbitrary (NonZero GF_2_2 ) where arbitrary = (NonZero . GF_2_2 ) <$> mkGen (randomInvertible gf_2_2 )
+instance Arbitrary (NonZero GF_2_3 ) where arbitrary = (NonZero . GF_2_3 ) <$> mkGen (randomInvertible gf_2_3 )
+instance Arbitrary (NonZero GF_2_4 ) where arbitrary = (NonZero . GF_2_4 ) <$> mkGen (randomInvertible gf_2_4 )
+instance Arbitrary (NonZero GF_2_5 ) where arbitrary = (NonZero . GF_2_5 ) <$> mkGen (randomInvertible gf_2_5 )
+instance Arbitrary (NonZero GF_2_6 ) where arbitrary = (NonZero . GF_2_6 ) <$> mkGen (randomInvertible gf_2_6 )
+
+instance Arbitrary (NonZero GF_3_1 ) where arbitrary = (NonZero . GF_3_1 ) <$> mkGen (randomInvertible gf_3_1 )
+instance Arbitrary (NonZero GF_3_2 ) where arbitrary = (NonZero . GF_3_2 ) <$> mkGen (randomInvertible gf_3_2 )
+instance Arbitrary (NonZero GF_3_3 ) where arbitrary = (NonZero . GF_3_3 ) <$> mkGen (randomInvertible gf_3_3 )
+instance Arbitrary (NonZero GF_3_4 ) where arbitrary = (NonZero . GF_3_4 ) <$> mkGen (randomInvertible gf_3_4 )
+instance Arbitrary (NonZero GF_3_5 ) where arbitrary = (NonZero . GF_3_5 ) <$> mkGen (randomInvertible gf_3_5 )
+instance Arbitrary (NonZero GF_3_6 ) where arbitrary = (NonZero . GF_3_6 ) <$> mkGen (randomInvertible gf_3_6 )
+
+instance Arbitrary (NonZero GF_5_1 ) where arbitrary = (NonZero . GF_5_1 ) <$> mkGen (randomInvertible gf_5_1 )
+instance Arbitrary (NonZero GF_5_2 ) where arbitrary = (NonZero . GF_5_2 ) <$> mkGen (randomInvertible gf_5_2 )
+instance Arbitrary (NonZero GF_5_3 ) where arbitrary = (NonZero . GF_5_3 ) <$> mkGen (randomInvertible gf_5_3 )
+instance Arbitrary (NonZero GF_5_4 ) where arbitrary = (NonZero . GF_5_4 ) <$> mkGen (randomInvertible gf_5_4 )
+instance Arbitrary (NonZero GF_5_5 ) where arbitrary = (NonZero . GF_5_5 ) <$> mkGen (randomInvertible gf_5_5 )
+instance Arbitrary (NonZero GF_5_6 ) where arbitrary = (NonZero . GF_5_6 ) <$> mkGen (randomInvertible gf_5_6 )
 
 --------------------------------------------------------------------------------
 
@@ -171,8 +284,32 @@ s257   = S.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 257  )) :: S.Witness
 s7919  = S.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 7919 )) :: S.WitnessFp 7919 
 s32003 = S.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 32003)) :: S.WitnessFp 32003
 
--- gf_2_1 =
--- gf_2_2 =
--- gf_2_3 =
+gf_2   = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 2  )) :: G.WitnessGF 2   1
+gf_3   = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 3  )) :: G.WitnessGF 3   1
+gf_5   = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 5  )) :: G.WitnessGF 5   1
+gf_7   = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 7  )) :: G.WitnessGF 7   1
+gf_17  = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 17 )) :: G.WitnessGF 17  1
+gf_257 = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 257)) :: G.WitnessGF 257 1
+
+gf_2_1 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 2) (unsafeSNat64 1)) :: G.WitnessGF 2 1
+gf_2_2 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 2) (unsafeSNat64 2)) :: G.WitnessGF 2 2
+gf_2_3 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 2) (unsafeSNat64 3)) :: G.WitnessGF 2 3
+gf_2_4 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 2) (unsafeSNat64 4)) :: G.WitnessGF 2 4
+gf_2_5 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 2) (unsafeSNat64 5)) :: G.WitnessGF 2 5
+gf_2_6 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 2) (unsafeSNat64 6)) :: G.WitnessGF 2 6
+
+gf_3_1 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 3) (unsafeSNat64 1)) :: G.WitnessGF 3 1
+gf_3_2 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 3) (unsafeSNat64 2)) :: G.WitnessGF 3 2
+gf_3_3 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 3) (unsafeSNat64 3)) :: G.WitnessGF 3 3
+gf_3_4 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 3) (unsafeSNat64 4)) :: G.WitnessGF 3 4
+gf_3_5 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 3) (unsafeSNat64 5)) :: G.WitnessGF 3 5
+gf_3_6 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 3) (unsafeSNat64 6)) :: G.WitnessGF 3 6
+
+gf_5_1 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 1)) :: G.WitnessGF 5 1
+gf_5_2 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 2)) :: G.WitnessGF 5 2
+gf_5_3 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 3)) :: G.WitnessGF 5 3
+gf_5_4 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 4)) :: G.WitnessGF 5 4
+gf_5_5 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 5)) :: G.WitnessGF 5 5
+gf_5_6 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 6)) :: G.WitnessGF 5 6
 
 --------------------------------------------------------------------------------

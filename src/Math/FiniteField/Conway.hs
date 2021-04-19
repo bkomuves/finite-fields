@@ -103,6 +103,11 @@ lookupConwayPoly !sp !sm =
        Nothing  -> Nothing
        Just ptr -> Just (ConwayWitness ptr)
 
+unsafeLookupConwayPoly :: SNat64 p -> SNat64 m -> HasConwayPoly p m
+unsafeLookupConwayPoly sp sm = case lookupConwayPoly sp sm of
+  Nothing  -> error "unsafeLookupConwayPoly: Conway polynomial not found"
+  Just cw  -> cw
+
 -- | Usage: @lookupSomeConwayPoly p m@ for @q = p^m@
 lookupSomeConwayPoly :: Int -> Int -> Maybe SomeConwayPoly
 lookupSomeConwayPoly !p !m = case (someSNat64 (fromIntegral p) , someSNat64 (fromIntegral m)) of
