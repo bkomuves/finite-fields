@@ -1,6 +1,20 @@
 
 -- | Example application: brute force counting of points on the elliptic
 -- curve @y^2 = x^3 + 2@ over the finite field @F_q@ where @q=p^m@.
+--
+-- For example, over GF(7), the zeta function of (the projective) curve is 
+--
+-- >    1 + T + 7*T^2 
+-- > -------------------
+-- >   (1-T) * (1-7*T) 
+--
+-- which, after taking the logarithmic derivative and then a Taylor series 
+-- expansion, predicts the (projective) counts for GF(7^m) to be:
+--
+-- > 9, 63, 324, 2331, 17019 ...
+--
+-- This program counts the affine points, so the result it outputs is one less. 
+--
 
 {-# LANGUAGE BangPatterns #-}
 module Main where
@@ -13,7 +27,7 @@ import System.Environment
 
 import Math.FiniteField.Class
 import Math.FiniteField.Conway
-import Math.FiniteField.Galois.Small
+import Math.FiniteField.GaloisField.Small
 import Math.FiniteField.TypeLevel
 
 --------------------------------------------------------------------------------
