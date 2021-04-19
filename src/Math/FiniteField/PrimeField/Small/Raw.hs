@@ -38,6 +38,8 @@ mul !p !x !y = mod (x*y) p
 
 pow :: P -> F -> Int64 -> F
 pow !p !z !e 
+  | z == 0    = 0
+  | e == 0    = 1
   | e < 0     = pow p (inv p z) (negate e)
   | e >= pm1i = go 1 z (mod e pm1i)
   | otherwise = go 1 z e
@@ -53,9 +55,11 @@ pow !p !z !e
 
 pow' :: P -> F -> Integer -> F
 pow' !p !z !e 
-  | e < 0       = pow' p (inv p z) (negate e)
-  | e >= pm1    = pow  p z (fromIntegral (mod e pm1))
-  | otherwise   = pow  p z (fromIntegral e)
+  | z == 0    = 0
+  | e == 0    = 1
+  | e < 0     = pow' p (inv p z) (negate e)
+  | e >= pm1  = pow  p z (fromIntegral (mod e pm1))
+  | otherwise = pow  p z (fromIntegral e)
   where
     pm1 = fromIntegral (p - 1) :: Integer
 

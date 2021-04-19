@@ -37,6 +37,8 @@ mul !p !x !y = mod (x*y) p
 
 pow :: P -> F -> Integer -> F
 pow p z e 
+  | z == 0    = 0
+  | e == 0    = 1
   | e < 0     = pow p (inv p z) (negate e)
   | e >= pm1  = go 1 z (mod e pm1)
   | otherwise = go 1 z e

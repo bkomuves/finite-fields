@@ -43,6 +43,11 @@ fieldProperties groupName unwrap field = testGroup groupName
   , testProperty "inversion vs. division v2"             (binaryNZ unwrap prop_inv_vs_div_2      field)           
   , testProperty "left distributivity"                   (ternary  unwrap prop_left_distrib      field)     
   , testProperty "right distributivity"                  (ternary  unwrap prop_right_distrib     field)      
+  , testProperty "multiply by the characteristic"        (unary    unwrap prop_mul_by_char       field)
+  , testProperty "x ^ (q-2) == inverse x"                (unaryNZ  unwrap prop_inv_vs_pow        field)
+  , testProperty "x ^ (q-1) == 1"                        (unaryNZ  unwrap prop_mul_order         field)
+  , testProperty "x ^ q     == x"                        (unary    unwrap prop_pow_vs_id         field)
+  , testProperty "power vs. iterated product"            (binaryI  unwrap prop_pow_vs_product    field)
   ]
 
 --------------------------------------------------------------------------------
@@ -62,6 +67,9 @@ binaryNZ unwrap f w x (NonZero y) = f w (unwrap x) (NonZero $ unwrap y)
 
 ternary :: (b -> a) -> (witness -> a -> a -> a -> result) -> (witness -> b -> b -> b -> result)
 ternary unwrap f w x y z = f w (unwrap x) (unwrap y) (unwrap z)
+
+binaryI :: (b -> a) -> (witness -> a -> Int -> result) -> (witness -> b -> Int -> result)
+binaryI unwrap f w x y = f w (unwrap x) y
 
 --------------------------------------------------------------------------------
 
@@ -137,5 +145,27 @@ prop_left_distrib field x y z = x*(y+z) == x*y + x*z
 
 prop_right_distrib :: Field f => Witness f -> f -> f -> f -> Bool
 prop_right_distrib field x y z = (x+y)*z == x*z + y*z
+
+--------------------------------------------------------------------------------
+
+prop_mul_by_char :: Field f => Witness f -> f -> Bool
+prop_mul_by_char field x = foldl1 (+) (replicate (fromIntegral $ characteristic field) x) == zero field
+
+prop_inv_vs_pow :: Field f => Witness f -> NonZero f -> Bool
+prop_inv_vs_pow field (NonZero x) = inverse x == power x (fieldSize field - 2)
+
+prop_mul_order :: Field f => Witness f -> NonZero f -> Bool
+prop_mul_order field (NonZero x) = one field == power x (fieldSize field - 1)
+
+prop_pow_vs_id :: Field f => Witness f -> f -> Bool
+prop_pow_vs_id field x = x == power x (fieldSize field)
+
+prop_pow_vs_product :: Field f => Witness f -> f -> Int -> Bool
+prop_pow_vs_product field x e 
+  | e >  0 =  powerSmall x e == foldl1 (*) (replicate      e           x )
+  | e <  0 =  powerSmall x e == foldl1 (*) (replicate (abs e) (inverse x))
+  | e == 0 =  if isZero x
+                then powerSmall x e == zero field    -- it seems this is the "correct" choice
+                else powerSmall x e == one  field    -- for example 0 = 0^(q-1) == 0^0 /= 1 
 
 --------------------------------------------------------------------------------

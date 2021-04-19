@@ -30,7 +30,7 @@ So far we have implemented:
 * generic prime fields - module `Math.FiniteField.PrimeField.Generic`
 * small prime fields, where small means `p < 2^31` - module  `Math.FiniteField.PrimeField.Small`
 * small Galois fields, using a precomputed table of Conway polynomials - module `Math.FiniteField.GaloisField.Small`
-
+* small Galois fields, using tables of Zech's logarithm
 
 How to use
 ----------

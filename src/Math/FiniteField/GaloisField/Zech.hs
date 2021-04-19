@@ -197,8 +197,8 @@ zechMul (Zech table a) (Zech _ b)
 
 zechPow :: Zech p m -> Integer -> Zech p m 
 zechPow z@(Zech table a) e
-  | e == 0     = Zech table 0     -- x^0 = 1
   | a == -1    = Zech table a     -- 0^e = 0
+  | e == 0     = Zech table 0     -- x^0 = 1
   | a == 0     = Zech table a     -- 1^e = 1
   | otherwise  = let n = fromIntegral (_qMinus1 table) :: Integer
                      c = fromIntegral a * e            :: Integer

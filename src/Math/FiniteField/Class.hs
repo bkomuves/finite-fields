@@ -114,6 +114,8 @@ discreteLogTable witness = Map.fromList (worker 0 (one witness)) where
 -- | Generic exponentiation
 powerDefault :: forall f. Field f => f -> Integer -> f
 powerDefault !z !e 
+  | isZero z  = z 
+  | e == 0    = one w
   | e < 0     = powerDefault (recip z) (negate e)
   | e >= pm1  = go (one w) z (mod e pm1)
   | otherwise = go (one w) z e
