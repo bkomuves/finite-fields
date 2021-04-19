@@ -1,7 +1,10 @@
 
 -- | Type class interface to different implementations of finite fields
 
+{-# LANGUAGE BangPatterns, FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables, TypeFamilies, TypeFamilyDependencies #-}
+{-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
+
 module Math.FiniteField.Class where
 
 --------------------------------------------------------------------------------
@@ -16,7 +19,7 @@ import System.Random ( RandomGen )
 
 --------------------------------------------------------------------------------
 
-class (Eq f, Show f, Num f, Fractional f) => Field f where
+class (Eq f, Show f, Num f, Fractional f, Show (Witness f)) => Field f where
   -- | witness for the existence of the field (this is an injective type family!) 
   type Witness f = r | r -> f                 
   -- | the prime characteristic
@@ -67,6 +70,13 @@ class (Eq f, Show f, Num f, Fractional f) => Field f where
 
 --------------------------------------------------------------------------------
 
+data SomeField 
+  = forall f. Field f => SomeField (Witness f)
+
+deriving instance Show SomeField
+
+--------------------------------------------------------------------------------
+
 -- | The multiplicate inverse (synonym for 'recip')
 inverse :: Field f => f -> f
 inverse = recip
@@ -87,7 +97,7 @@ multGroup w = scanl1 (*) list where
 
 -- | Generic exponentiation
 powerDefault :: forall f. Field f => f -> Integer -> f
-powerDefault z e 
+powerDefault !z !e 
   | e < 0     = powerDefault (recip z) (negate e)
   | e >= pm1  = go (one w) z (mod e pm1)
   | otherwise = go (one w) z e

@@ -64,20 +64,23 @@ Library
 
 --------------------------------------------------------------------------------
 
--- test-suite finite-fields-tests
---                       
---   type:                 exitcode-stdio-1.0
---   hs-source-dirs:       test
---   main-is:              TestSuite.hs
--- 
---   other-modules:        Test.FieldProperties
--- 
---   Build-Depends:        base >= 4 && < 5, random, finite-fields,
---                         tasty, 
---                         tasty-hunit,
---                         QuickCheck >= 2  , tasty-quickcheck, 
---                         smallcheck >= 1.2, tasty-smallcheck
--- 
---   Default-Language:     Haskell2010
---   Default-Extensions:   CPP, BangPatterns, KindSignatures, DataKinds
+test-suite finite-fields-tests
+                      
+  type:                 exitcode-stdio-1.0
+  hs-source-dirs:       test
+  main-is:              TestSuite.hs
+
+  other-modules:        Test.FieldProperties
+                        Test.FieldTests
+                        Test.ConcretFields
+                        Test.Common
+
+  Build-Depends:        base >= 4 && < 5, random, finite-fields,
+                        tasty, 
+                        tasty-hunit,
+                        QuickCheck >= 2  , tasty-quickcheck
+                        -- smallcheck >= 1.2, tasty-smallcheck
+
+  Default-Language:     Haskell2010
+  Default-Extensions:   CPP, BangPatterns, KindSignatures, DataKinds
 

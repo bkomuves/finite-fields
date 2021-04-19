@@ -4,7 +4,7 @@
 -- This would be much simpler in a dependently typed language;
 -- alas, we are in Haskell, so for now we have to feel the pain.
 --
--- How to use this:
+-- How to use this, the over-complicated way:
 --
 -- * create a 'SomeSNat' from an integer using the function 'someSNat'
 -- 
@@ -22,14 +22,18 @@
 -- * now you are ready to use the resulting witness (of type @IsPrime n@
 --   or @IsSmallPrime n@) to create finite fields.
 --
+-- Or you can just the functions provided with each field implementation
+-- to create the fields directly (in form of existantials, ie. sigma types,
+-- so you still have to do the @case _ of@ thing).
+--
 
 {-# LANGUAGE DataKinds, KindSignatures, PolyKinds #-}
 {-# LANGUAGE GADTs, ExistentialQuantification, StandaloneDeriving #-}
 
 module Math.FiniteField.TypeLevel
   ( -- * Singleton types
-    SNat   , fromSNat   , proxyOfSNat   , proxyToSNat   
-  , SNat64 , fromSNat64 , proxyOfSNat64 , proxyToSNat64
+    SNat   , fromSNat   , proxyOfSNat   , proxyToSNat   , unsafeSNat
+  , SNat64 , fromSNat64 , proxyOfSNat64 , proxyToSNat64 , unsafeSNat64
     -- * Creating singleton types
   , SomeSNat(..) , someSNat , SomeSNat64(..) , someSNat64 , someSNat64_
     -- * Small numbers

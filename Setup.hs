@@ -14,7 +14,6 @@ import Data.List
 import Distribution.Simple
 import Distribution.PackageDescription
 
-import System.Process
 import System.Directory
 import System.FilePath
 

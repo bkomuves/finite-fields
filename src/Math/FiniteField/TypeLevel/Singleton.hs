@@ -35,6 +35,15 @@ fromSNat (SNat n) = n
 proxyToSNat :: KnownNat n => Proxy n -> SNat n
 proxyToSNat proxy = SNat (fromIntegral (natVal proxy))
 
+-- | You are responsible here! 
+--
+-- (this is exported primarily because the testsuite is much simpler using this...)
+--
+unsafeSNat :: Integer -> SNat n
+unsafeSNat = SNat 
+
+--------------------------------------------------------------------------------
+
 -- | Word-sized nat-singletons
 newtype SNat64 (n :: Nat) 
   = SNat64 Word64
@@ -48,6 +57,13 @@ fromSNat64 (SNat64 n) = n
 
 proxyToSNat64 :: KnownNat n => Proxy n -> SNat64 n
 proxyToSNat64 proxy = SNat64 (fromIntegral (natVal proxy))
+
+-- | You are responsible here! 
+--
+-- (this is exported primarily because the testsuite is much simpler using this...)
+--
+unsafeSNat64 :: Word64 -> SNat64 n
+unsafeSNat64 = SNat64 
 
 --------------------------------------------------------------------------------
 -- * Creating singleton types
