@@ -27,7 +27,8 @@ import System.Environment
 
 import Math.FiniteField.Class
 import Math.FiniteField.Conway
-import Math.FiniteField.GaloisField.Small
+-- import Math.FiniteField.GaloisField.Small
+import Math.FiniteField.GaloisField.Zech
 import Math.FiniteField.TypeLevel
 
 --------------------------------------------------------------------------------
@@ -62,9 +63,9 @@ main = do
     [prime,expo] -> case (readMaybe prime, readMaybe expo) of
       (Just p, Just m) -> do
         putStrLn $ "Galois field of order " ++ show p ++ "^" ++ show m
-        case mkGaloisField p m of
+        case mkZechField p m of
           Nothing   -> putStrLn $ "error: cannot construct finite field GF(" ++ show p ++ "^" ++ show m ++ ")"
-          Just some -> case some of { SomeWitnessGF witness -> fieldWorker witness }
+          Just some -> case some of { SomeWitnessZech witness -> fieldWorker witness }
       _ -> printUsage
     _ -> printUsage
 

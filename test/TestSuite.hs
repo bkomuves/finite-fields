@@ -11,6 +11,7 @@ import Test.FieldTests
   ( generic_primefield_tests
   , small_primefield_tests
   , small_galoisfield_tests
+  , small_zechfield_tests
   )
 
 --------------------------------------------------------------------------------
@@ -22,6 +23,7 @@ tests = testGroup "Tests"
   [ generic_primefield_tests
   , small_primefield_tests
   , small_galoisfield_tests
+  , small_zechfield_tests
   ]
         
 --------------------------------------------------------------------------------

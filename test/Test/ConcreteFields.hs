@@ -26,6 +26,7 @@ import Math.FiniteField.TypeLevel
 import Math.FiniteField.PrimeField.Generic as Z
 import Math.FiniteField.PrimeField.Small   as S
 import Math.FiniteField.GaloisField.Small  as G
+import Math.FiniteField.GaloisField.Zech   as Zech
 
 import Test.Common
 
@@ -95,6 +96,31 @@ small_galoisfields =
   , ( "GF(5^6)"   , TestField fromGF_5_6  gf_5_6  )
   ]
 
+small_zechfields :: [(String,TestField)]
+small_zechfields = 
+  [ -- 2^m
+    ( "Zech(2^1)"   , TestField fromZech_2_1  zech_2_1  )
+  , ( "Zech(2^2)"   , TestField fromZech_2_2  zech_2_2  )
+  , ( "Zech(2^3)"   , TestField fromZech_2_3  zech_2_3  )
+  , ( "Zech(2^4)"   , TestField fromZech_2_4  zech_2_4  )
+  , ( "Zech(2^5)"   , TestField fromZech_2_5  zech_2_5  )
+  , ( "Zech(2^6)"   , TestField fromZech_2_6  zech_2_6  )
+    -- 3^m
+  , ( "Zech(3^1)"   , TestField fromZech_3_1  zech_3_1  )
+  , ( "Zech(3^2)"   , TestField fromZech_3_2  zech_3_2  )
+  , ( "Zech(3^3)"   , TestField fromZech_3_3  zech_3_3  )
+  , ( "Zech(3^4)"   , TestField fromZech_3_4  zech_3_4  )
+  , ( "Zech(3^5)"   , TestField fromZech_3_5  zech_3_5  )
+  , ( "Zech(3^6)"   , TestField fromZech_3_6  zech_3_6  )
+    -- 13^m
+  , ( "Zech(13^1)"   , TestField fromZech_13_1  zech_13_1  )
+  , ( "Zech(13^2)"   , TestField fromZech_13_2  zech_13_2  )
+  , ( "Zech(13^3)"   , TestField fromZech_13_3  zech_13_3  )
+  , ( "Zech(13^4)"   , TestField fromZech_13_4  zech_13_4  )
+  , ( "Zech(13^5)"   , TestField fromZech_13_5  zech_13_5  )
+    --, ( "Zech(13^6)"   , TestField fromZech_13_6  zech_13_6  )
+  ]
+
 --------------------------------------------------------------------------------
 
 newtype ZZ2     = ZZ2     { fromZZ2     :: Z.Fp  2     } deriving (Eq,Show)  
@@ -148,6 +174,27 @@ newtype GF_5_3  = GF_5_3  { fromGF_5_3  :: G.GF 5 3    } deriving (Eq,Show)
 newtype GF_5_4  = GF_5_4  { fromGF_5_4  :: G.GF 5 4    } deriving (Eq,Show) 
 newtype GF_5_5  = GF_5_5  { fromGF_5_5  :: G.GF 5 5    } deriving (Eq,Show) 
 newtype GF_5_6  = GF_5_6  { fromGF_5_6  :: G.GF 5 6    } deriving (Eq,Show) 
+
+newtype Zech_2_1  = Zech_2_1  { fromZech_2_1  :: Zech.Zech 2 1 } deriving (Eq,Show) 
+newtype Zech_2_2  = Zech_2_2  { fromZech_2_2  :: Zech.Zech 2 2 } deriving (Eq,Show) 
+newtype Zech_2_3  = Zech_2_3  { fromZech_2_3  :: Zech.Zech 2 3 } deriving (Eq,Show) 
+newtype Zech_2_4  = Zech_2_4  { fromZech_2_4  :: Zech.Zech 2 4 } deriving (Eq,Show) 
+newtype Zech_2_5  = Zech_2_5  { fromZech_2_5  :: Zech.Zech 2 5 } deriving (Eq,Show) 
+newtype Zech_2_6  = Zech_2_6  { fromZech_2_6  :: Zech.Zech 2 6 } deriving (Eq,Show) 
+
+newtype Zech_3_1  = Zech_3_1  { fromZech_3_1  :: Zech.Zech 3 1 } deriving (Eq,Show) 
+newtype Zech_3_2  = Zech_3_2  { fromZech_3_2  :: Zech.Zech 3 2 } deriving (Eq,Show) 
+newtype Zech_3_3  = Zech_3_3  { fromZech_3_3  :: Zech.Zech 3 3 } deriving (Eq,Show) 
+newtype Zech_3_4  = Zech_3_4  { fromZech_3_4  :: Zech.Zech 3 4 } deriving (Eq,Show) 
+newtype Zech_3_5  = Zech_3_5  { fromZech_3_5  :: Zech.Zech 3 5 } deriving (Eq,Show) 
+newtype Zech_3_6  = Zech_3_6  { fromZech_3_6  :: Zech.Zech 3 6 } deriving (Eq,Show) 
+
+newtype Zech_13_1  = Zech_13_1  { fromZech_13_1  :: Zech.Zech 13 1 } deriving (Eq,Show) 
+newtype Zech_13_2  = Zech_13_2  { fromZech_13_2  :: Zech.Zech 13 2 } deriving (Eq,Show) 
+newtype Zech_13_3  = Zech_13_3  { fromZech_13_3  :: Zech.Zech 13 3 } deriving (Eq,Show) 
+newtype Zech_13_4  = Zech_13_4  { fromZech_13_4  :: Zech.Zech 13 4 } deriving (Eq,Show) 
+newtype Zech_13_5  = Zech_13_5  { fromZech_13_5  :: Zech.Zech 13 5 } deriving (Eq,Show) 
+newtype Zech_13_6  = Zech_13_6  { fromZech_13_6  :: Zech.Zech 13 6 } deriving (Eq,Show) 
 
 --------------------------------------------------------------------------------
 
@@ -206,6 +253,29 @@ instance Arbitrary GF_5_4  where arbitrary = GF_5_4  <$> mkGen (randomFieldElem 
 instance Arbitrary GF_5_5  where arbitrary = GF_5_5  <$> mkGen (randomFieldElem gf_5_5 )
 instance Arbitrary GF_5_6  where arbitrary = GF_5_6  <$> mkGen (randomFieldElem gf_5_6 )
 
+instance Arbitrary Zech_2_1  where arbitrary = Zech_2_1  <$> mkGen (randomFieldElem zech_2_1 )
+instance Arbitrary Zech_2_2  where arbitrary = Zech_2_2  <$> mkGen (randomFieldElem zech_2_2 )
+instance Arbitrary Zech_2_3  where arbitrary = Zech_2_3  <$> mkGen (randomFieldElem zech_2_3 )
+instance Arbitrary Zech_2_4  where arbitrary = Zech_2_4  <$> mkGen (randomFieldElem zech_2_4 )
+instance Arbitrary Zech_2_5  where arbitrary = Zech_2_5  <$> mkGen (randomFieldElem zech_2_5 )
+instance Arbitrary Zech_2_6  where arbitrary = Zech_2_6  <$> mkGen (randomFieldElem zech_2_6 )
+
+instance Arbitrary Zech_3_1  where arbitrary = Zech_3_1  <$> mkGen (randomFieldElem zech_3_1 )
+instance Arbitrary Zech_3_2  where arbitrary = Zech_3_2  <$> mkGen (randomFieldElem zech_3_2 )
+instance Arbitrary Zech_3_3  where arbitrary = Zech_3_3  <$> mkGen (randomFieldElem zech_3_3 )
+instance Arbitrary Zech_3_4  where arbitrary = Zech_3_4  <$> mkGen (randomFieldElem zech_3_4 )
+instance Arbitrary Zech_3_5  where arbitrary = Zech_3_5  <$> mkGen (randomFieldElem zech_3_5 )
+instance Arbitrary Zech_3_6  where arbitrary = Zech_3_6  <$> mkGen (randomFieldElem zech_3_6 )
+
+instance Arbitrary Zech_13_1  where arbitrary = Zech_13_1  <$> mkGen (randomFieldElem zech_13_1 )
+instance Arbitrary Zech_13_2  where arbitrary = Zech_13_2  <$> mkGen (randomFieldElem zech_13_2 )
+instance Arbitrary Zech_13_3  where arbitrary = Zech_13_3  <$> mkGen (randomFieldElem zech_13_3 )
+instance Arbitrary Zech_13_4  where arbitrary = Zech_13_4  <$> mkGen (randomFieldElem zech_13_4 )
+instance Arbitrary Zech_13_5  where arbitrary = Zech_13_5  <$> mkGen (randomFieldElem zech_13_5 )
+instance Arbitrary Zech_13_6  where arbitrary = Zech_13_6  <$> mkGen (randomFieldElem zech_13_6 )
+
+--------------------------------------------------------------------------------
+
 instance Arbitrary (NonZero ZZ2    ) where arbitrary = (NonZero . ZZ2    ) <$> mkGen (randomInvertible zz2    )
 instance Arbitrary (NonZero ZZ3    ) where arbitrary = (NonZero . ZZ3    ) <$> mkGen (randomInvertible zz3    )
 instance Arbitrary (NonZero ZZ5    ) where arbitrary = (NonZero . ZZ5    ) <$> mkGen (randomInvertible zz5    )
@@ -258,6 +328,27 @@ instance Arbitrary (NonZero GF_5_4 ) where arbitrary = (NonZero . GF_5_4 ) <$> m
 instance Arbitrary (NonZero GF_5_5 ) where arbitrary = (NonZero . GF_5_5 ) <$> mkGen (randomInvertible gf_5_5 )
 instance Arbitrary (NonZero GF_5_6 ) where arbitrary = (NonZero . GF_5_6 ) <$> mkGen (randomInvertible gf_5_6 )
 
+instance Arbitrary (NonZero Zech_2_1 ) where arbitrary = (NonZero . Zech_2_1 ) <$> mkGen (randomInvertible zech_2_1 )
+instance Arbitrary (NonZero Zech_2_2 ) where arbitrary = (NonZero . Zech_2_2 ) <$> mkGen (randomInvertible zech_2_2 )
+instance Arbitrary (NonZero Zech_2_3 ) where arbitrary = (NonZero . Zech_2_3 ) <$> mkGen (randomInvertible zech_2_3 )
+instance Arbitrary (NonZero Zech_2_4 ) where arbitrary = (NonZero . Zech_2_4 ) <$> mkGen (randomInvertible zech_2_4 )
+instance Arbitrary (NonZero Zech_2_5 ) where arbitrary = (NonZero . Zech_2_5 ) <$> mkGen (randomInvertible zech_2_5 )
+instance Arbitrary (NonZero Zech_2_6 ) where arbitrary = (NonZero . Zech_2_6 ) <$> mkGen (randomInvertible zech_2_6 )
+
+instance Arbitrary (NonZero Zech_3_1 ) where arbitrary = (NonZero . Zech_3_1 ) <$> mkGen (randomInvertible zech_3_1 )
+instance Arbitrary (NonZero Zech_3_2 ) where arbitrary = (NonZero . Zech_3_2 ) <$> mkGen (randomInvertible zech_3_2 )
+instance Arbitrary (NonZero Zech_3_3 ) where arbitrary = (NonZero . Zech_3_3 ) <$> mkGen (randomInvertible zech_3_3 )
+instance Arbitrary (NonZero Zech_3_4 ) where arbitrary = (NonZero . Zech_3_4 ) <$> mkGen (randomInvertible zech_3_4 )
+instance Arbitrary (NonZero Zech_3_5 ) where arbitrary = (NonZero . Zech_3_5 ) <$> mkGen (randomInvertible zech_3_5 )
+instance Arbitrary (NonZero Zech_3_6 ) where arbitrary = (NonZero . Zech_3_6 ) <$> mkGen (randomInvertible zech_3_6 )
+
+instance Arbitrary (NonZero Zech_13_1 ) where arbitrary = (NonZero . Zech_13_1 ) <$> mkGen (randomInvertible zech_13_1 )
+instance Arbitrary (NonZero Zech_13_2 ) where arbitrary = (NonZero . Zech_13_2 ) <$> mkGen (randomInvertible zech_13_2 )
+instance Arbitrary (NonZero Zech_13_3 ) where arbitrary = (NonZero . Zech_13_3 ) <$> mkGen (randomInvertible zech_13_3 )
+instance Arbitrary (NonZero Zech_13_4 ) where arbitrary = (NonZero . Zech_13_4 ) <$> mkGen (randomInvertible zech_13_4 )
+instance Arbitrary (NonZero Zech_13_5 ) where arbitrary = (NonZero . Zech_13_5 ) <$> mkGen (randomInvertible zech_13_5 )
+instance Arbitrary (NonZero Zech_13_6 ) where arbitrary = (NonZero . Zech_13_6 ) <$> mkGen (randomInvertible zech_13_6 )
+
 --------------------------------------------------------------------------------
 
 zz2     = Z.WitnessFp (believeMeItsPrime (unsafeSNat 2    )) :: Z.WitnessFp 2    
@@ -288,6 +379,7 @@ gf_2   = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 2  )) :: G.WitnessGF
 gf_3   = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 3  )) :: G.WitnessGF 3   1
 gf_5   = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 5  )) :: G.WitnessGF 5   1
 gf_7   = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 7  )) :: G.WitnessGF 7   1
+gf_13  = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 13 )) :: G.WitnessGF 13  1
 gf_17  = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 17 )) :: G.WitnessGF 17  1
 gf_257 = G.WitnessFp (believeMeItsASmallPrime (unsafeSNat64 257)) :: G.WitnessGF 257 1
 
@@ -311,5 +403,33 @@ gf_5_3 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 3)) 
 gf_5_4 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 4)) :: G.WitnessGF 5 4
 gf_5_5 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 5)) :: G.WitnessGF 5 5
 gf_5_6 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 5) (unsafeSNat64 6)) :: G.WitnessGF 5 6
+
+gf_13_1 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 13) (unsafeSNat64 1)) :: G.WitnessGF 13 1
+gf_13_2 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 13) (unsafeSNat64 2)) :: G.WitnessGF 13 2
+gf_13_3 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 13) (unsafeSNat64 3)) :: G.WitnessGF 13 3
+gf_13_4 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 13) (unsafeSNat64 4)) :: G.WitnessGF 13 4
+gf_13_5 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 13) (unsafeSNat64 5)) :: G.WitnessGF 13 5
+gf_13_6 = G.WitnessFq (unsafeLookupConwayPoly (unsafeSNat64 13) (unsafeSNat64 6)) :: G.WitnessGF 13 6
+
+zech_2_1 = Zech.WitnessZech (makeZechTable gf_2  ) :: Zech.WitnessZech 2 1
+zech_2_2 = Zech.WitnessZech (makeZechTable gf_2_2) :: Zech.WitnessZech 2 2
+zech_2_3 = Zech.WitnessZech (makeZechTable gf_2_3) :: Zech.WitnessZech 2 3
+zech_2_4 = Zech.WitnessZech (makeZechTable gf_2_4) :: Zech.WitnessZech 2 4
+zech_2_5 = Zech.WitnessZech (makeZechTable gf_2_5) :: Zech.WitnessZech 2 5
+zech_2_6 = Zech.WitnessZech (makeZechTable gf_2_6) :: Zech.WitnessZech 2 6
+
+zech_3_1 = Zech.WitnessZech (makeZechTable gf_3  ) :: Zech.WitnessZech 3 1
+zech_3_2 = Zech.WitnessZech (makeZechTable gf_3_2) :: Zech.WitnessZech 3 2
+zech_3_3 = Zech.WitnessZech (makeZechTable gf_3_3) :: Zech.WitnessZech 3 3
+zech_3_4 = Zech.WitnessZech (makeZechTable gf_3_4) :: Zech.WitnessZech 3 4
+zech_3_5 = Zech.WitnessZech (makeZechTable gf_3_5) :: Zech.WitnessZech 3 5
+zech_3_6 = Zech.WitnessZech (makeZechTable gf_3_6) :: Zech.WitnessZech 3 6
+
+zech_13_1 = Zech.WitnessZech (makeZechTable gf_13  ) :: Zech.WitnessZech 13 1
+zech_13_2 = Zech.WitnessZech (makeZechTable gf_13_2) :: Zech.WitnessZech 13 2
+zech_13_3 = Zech.WitnessZech (makeZechTable gf_13_3) :: Zech.WitnessZech 13 3
+zech_13_4 = Zech.WitnessZech (makeZechTable gf_13_4) :: Zech.WitnessZech 13 4
+zech_13_5 = Zech.WitnessZech (makeZechTable gf_13_5) :: Zech.WitnessZech 13 5
+zech_13_6 = Zech.WitnessZech (makeZechTable gf_13_6) :: Zech.WitnessZech 13 6
 
 --------------------------------------------------------------------------------

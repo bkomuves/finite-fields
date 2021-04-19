@@ -25,6 +25,9 @@ small_primefield_tests = testGroup "PrimeField/Small" (map someFieldProps small_
 small_galoisfield_tests :: TestTree
 small_galoisfield_tests = testGroup "GaloisField/Small" (map someFieldProps small_galoisfields)
 
+small_zechfield_tests :: TestTree
+small_zechfield_tests = testGroup "GaloisField/Zech" (map someFieldProps small_zechfields)
+
 --------------------------------------------------------------------------------
 
 someFieldProps :: (String,TestField) -> TestTree

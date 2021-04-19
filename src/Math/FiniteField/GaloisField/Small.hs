@@ -148,6 +148,12 @@ instance Eq (GF p m) where
   (==) (Fp _ x ) (Fp _ y ) = x == y
   (==) (Fq _ xs) (Fq _ ys) = xs == ys
 
+-- | Note: the @Ord@ instance is present only so that you can use 'GF' as key
+-- in @Maps@ - the ordering is kind of arbitrary! 
+instance Ord (GF p m) where
+  compare (Fp _ x ) (Fp _ y ) = compare x  y
+  compare (Fq _ xs) (Fq _ ys) = compare xs ys
+
 instance Show (GF p m) where
   show (Fp prime   x  ) = "<" ++ show x ++ " mod " ++ show (fromSmallPrime prime) ++ ">"
   show (Fq witness vec) = "<" ++ intercalate "+" list ++ " mod " ++ show p ++ ">" where

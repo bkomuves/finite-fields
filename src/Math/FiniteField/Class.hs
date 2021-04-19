@@ -12,10 +12,10 @@ module Math.FiniteField.Class where
 import Data.Bits
 import Data.List
 
-import System.Random ( RandomGen )
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 
--- import Data.Proxy
--- import Math.FiniteField.TypeLevel (proxyOf)
+import System.Random ( RandomGen )
 
 --------------------------------------------------------------------------------
 
@@ -94,6 +94,22 @@ multGroup w = scanl1 (*) list where
   g    = primGen w
   m    = fieldSize w
   list = replicate (fromIntegral m - 1) g
+
+--------------------------------------------------------------------------------
+
+-- | Computes a table of discrete logarithms with respect to the primitive 
+-- generator. Note: zero is not present in the resulting map.
+discreteLogTable :: forall f. (Ord f, Field f) => Witness f -> Map f Int
+discreteLogTable witness = Map.fromList (worker 0 (one witness)) where
+  g = primGen   witness
+  q = fieldSize witness
+  qm1 = fromInteger q - 1
+  worker :: Int -> f -> [(f,Int)]
+  worker !e !acc
+    | e < qm1    = (acc,e) : worker (e+1) (acc*g)
+    | otherwise  = []
+
+--------------------------------------------------------------------------------
 
 -- | Generic exponentiation
 powerDefault :: forall f. Field f => f -> Integer -> f

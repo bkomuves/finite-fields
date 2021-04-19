@@ -107,6 +107,11 @@ enumerateFp p = [ Fp p k | k <- [0..fromSmallPrime p-1] ]
 instance Eq (Fp p) where
   (==) (Fp _ x) (Fp _ y) = x == y
 
+-- | Note: the @Ord@ instance is present only so that you can use 'GF' as key
+-- in @Maps@ - the ordering is kind of arbitrary! 
+instance Ord (Fp p) where
+  compare (Fp _ x) (Fp _ y) = compare x y
+
 instance Show (Fp p) where
   show (Fp p k) = "(" ++ show k ++ " mod " ++ show (fromSmallPrime p) ++ ")"
 

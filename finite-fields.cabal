@@ -46,6 +46,7 @@ Library
                         Math.FiniteField.PrimeField.Generic
                         Math.FiniteField.PrimeField.Small
                         Math.FiniteField.GaloisField.Small
+                        Math.FiniteField.GaloisField.Zech
                         Math.FiniteField.Conway
                         Math.FiniteField.TypeLevel
                         Math.FiniteField.Primes

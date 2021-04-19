@@ -1,0 +1,4 @@
+*.hi
+*.o
+curve_count
+curve_count.exe
