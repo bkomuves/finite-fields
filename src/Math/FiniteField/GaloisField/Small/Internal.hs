@@ -110,6 +110,13 @@ mulIO !ptr !xs !ys =
 --   where
 --     !mbig = m+m-1
 
+resizePoly :: Int -> Vector Word32 -> Vector Word32
+resizePoly m vec = Vec.create $ do
+  let !l = min m (Vec.length vec) - 1
+  mvec <- MVec.replicate m 0
+  forM_ [0..l] $ \ !i -> MVec.unsafeWrite mvec i (Vec.unsafeIndex vec i)
+  return mvec
+
 -- | The vectors can have different lengths
 addPoly :: P -> Vector Word32 -> Vector Word32 -> Vector Word32
 addPoly !p !xs !ys 
@@ -224,6 +231,6 @@ invEuclid !p !ptr !a = worker (zeroPoly n) (onePoly n) (getCPoly ptr) a where
     True  -> if (polyDegree r > 0)
       then zeroPoly (Vec.length a)
       else let r0 = w32toW64 (Vec.unsafeIndex r 0)
-           in  scalePoly p (w64toW32 (Raw.inv p r0)) t
+           in  resizePoly n (scalePoly p (w64toW32 (Raw.inv p r0)) t)
 
 --------------------------------------------------------------------------------
