@@ -7,7 +7,18 @@
 {-# LANGUAGE ForeignFunctionInterface, StandaloneDeriving, BangPatterns #-}
 {-# LANGUAGE GADTs, ExistentialQuantification, DataKinds, KindSignatures #-}
 
-module Math.FiniteField.Conway where
+module Math.FiniteField.Conway 
+  ( HasConwayPoly
+  , SomeConwayPoly(..)
+  , conwayPrime  , conwayDim
+  , conwayParams , conwayParams'
+  , conwayCoefficients
+  , lookupSomeConwayPoly   
+  , lookupConwayPoly
+  , unsafeLookupConwayPoly 
+  , lookupConwayPrimRoot
+  )
+  where
 
 --------------------------------------------------------------------------------
 
@@ -15,7 +26,8 @@ import Data.Word
 import Data.Bits
 
 import Data.Proxy
-import GHC.TypeNats
+
+import GHC.TypeNats (Nat)
 
 import qualified Data.IntMap.Strict as IntMap
 
@@ -49,15 +61,12 @@ data SomeConwayPoly = forall p m. SomeConwayPoly (HasConwayPoly p m)
 
 deriving instance Show SomeConwayPoly
 
-newtype HasConwayPoly (p :: Nat) (m :: Nat) where
-  ConwayWitness :: Ptr Word32 -> HasConwayPoly p m
-
 conwayProxies :: HasConwayPoly p m -> (Proxy p, Proxy m)
 conwayProxies _ = (Proxy, Proxy)
 
 instance Show (HasConwayPoly p m) where
   show witness = "ConwayPoly[" ++ show p ++ "^" ++ show m ++ "]" where
-    (p,m) = conwayParams witness
+    (p,m) = conwayParams_ witness
 
 -- | The prime characteristic @p@
 conwayPrime :: HasConwayPoly p m -> IsSmallPrime p
@@ -65,34 +74,25 @@ conwayPrime (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (p,_) <- getConwayEntryParams ptr
   return (believeMeItsASmallPrime (SNat64 p))
 
-conwayPrime_ :: HasConwayPoly p m -> Word64
-conwayPrime_ (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
-  (p,_) <- getConwayEntryParams ptr
-  return p
-
 -- | The dimension @m@ of @F_q@ over @F_p@
 conwayDim :: HasConwayPoly p m -> Int
 conwayDim (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (_,m) <- getConwayEntryParams ptr
   return (fromIntegral m)
 
--- | @(prime,exponent)@
-conwayParams :: HasConwayPoly p m -> (Word64,Int)
-conwayParams (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
-  (p,m) <- getConwayEntryParams ptr
-  return (fromIntegral p, fromIntegral m)
+-- | The pair @(p,m)@
+conwayParams :: HasConwayPoly p m -> (Int,Int)
+conwayParams witness = (fromIntegral p, fromIntegral m) where
+  (p,m) = conwayParams_ witness
 
 conwayParams' :: HasConwayPoly p m -> (SNat64 p, SNat64 m)
 conwayParams' witness = (SNat64 p, SNat64 (fromIntegral m)) where
-  (p,m) = conwayParams witness
+  (p,m) = conwayParams_ witness
 
 conwayCoefficients :: HasConwayPoly p m -> [Word64]
 conwayCoefficients (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (_,_,list) <- marshalConwayEntry ptr
   return list
-
-fromConwayPoly :: HasConwayPoly p m -> Ptr Word32
-fromConwayPoly (ConwayWitness ptr) = ptr
 
 -- | Usage: @lookupConwayPoly sp sm@ for @q = p^m@
 lookupConwayPoly :: SNat64 p -> SNat64 m -> Maybe (HasConwayPoly p m)
@@ -115,11 +115,7 @@ lookupSomeConwayPoly !p !m = case (someSNat64 (fromIntegral p) , someSNat64 (fro
 
 -- | We have some Conway polynomials for @m=1@ too; the roots of 
 -- these linear polynomials are primitive roots in @F_p@
-lookupConwayPrimRoot_ :: Int -> Maybe Word64
-lookupConwayPrimRoot_ !p = case IntMap.lookup (encodePrimeExpo p 1) (fromConwayTable theConwayTable) of
-  Nothing   -> Nothing
-  Just ptr  -> case (Unsafe.unsafePerformIO $ marshalConwayEntry ptr) of
-    (_,_,[c,1])  -> Just (fromIntegral p - fromIntegral c)
-    _            -> error "lookupConwayPrimRoot: fatal error (should not happen)" 
+lookupConwayPrimRoot :: Int -> Maybe Int
+lookupConwayPrimRoot p = fromIntegral <$> (lookupConwayPrimRoot_ p)
 
 --------------------------------------------------------------------------------

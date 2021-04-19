@@ -15,7 +15,19 @@
 {-# LANGUAGE BangPatterns, ScopedTypeVariables, TypeFamilies #-}
 {-# LANGUAGE StandaloneDeriving, ExistentialQuantification #-}
 
-module Math.FiniteField.GaloisField.Zech where
+module Math.FiniteField.GaloisField.Zech 
+  ( -- * Tables of Zech logarithms
+    ZechTable
+  , makeZechTable
+    -- * Witness for the existence of the field
+  , WitnessZech(..)
+  , SomeWitnessZech(..)
+  , mkZechField
+  , unsafeZechField
+    -- * Field elements
+  , Zech
+  )
+  where 
 
 --------------------------------------------------------------------------------
 
@@ -42,8 +54,8 @@ data ZechTable = ZechTable
   { _zechParams :: !(Int32,Int32)     -- ^ @(p,m)@
   , _qMinus1    :: !Int32             -- ^ @p^m-1 = q-1@ 
   , _logMinus1  :: !Int32             -- ^ an integer @e@ such that @g^e = -1@
-  , _embedding  :: !(Vector Int32)    -- ^ embedding of F_p into F_q
-  , _zechLogs   :: !(Vector Int32)    -- ^ Zech's logarithms
+  , _embedding  :: !(Vector Int32)    -- ^ embedding of F_p into F_q (including 0)
+  , _zechLogs   :: !(Vector Int32)    -- ^ Zech's logarithms (except 0)
   }
   deriving Show
 
@@ -61,6 +73,11 @@ mkZechField p m = case GF.mkGaloisField p m of
   Nothing   -> Nothing
   Just some -> case some of
     GF.SomeWitnessGF wgf -> Just (SomeWitnessZech (WitnessZech (makeZechTable wgf)))
+
+unsafeZechField :: Int -> Int -> SomeWitnessZech
+unsafeZechField p m = case mkZechField p m of 
+  Nothing   -> error $ "unsafeZechField: cannot find Conway polynomial for GF(" ++ show p ++ "^" ++ show m ++ ")"
+  Just some -> some
 
 --------------------------------------------------------------------------------
 
@@ -132,9 +149,9 @@ makeZechTable witness = ZechTable (p,m) qm1 e embeds zechlogs where
   embeds   = Vec.fromList $ (-1) : [ (Map.!) dlog (embedSmall witness (fromIntegral i)) | i<-[1..p-1] ]
   zechlogs = Vec.fromList $ {- 0 : -} [ Map.findWithDefault (-1) (x + o) dlog | x <- map fst list ]
 
--- debugging 
-printzech p m = case GF.mkGaloisField p m of 
-  Just (GF.SomeWitnessGF field) -> print (makeZechTable field)
+-- -- debugging 
+-- printzech p m = case GF.mkGaloisField p m of 
+--   Just (GF.SomeWitnessGF field) -> print (makeZechTable field)
 
 --------------------------------------------------------------------------------
 

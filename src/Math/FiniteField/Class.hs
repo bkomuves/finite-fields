@@ -19,7 +19,7 @@ import System.Random ( RandomGen )
 
 --------------------------------------------------------------------------------
 
-class (Eq f, Show f, Num f, Fractional f, Show (Witness f)) => Field f where
+class (Eq f, Ord f, Show f, Num f, Fractional f, Show (Witness f)) => Field f where
   -- | witness for the existence of the field (this is an injective type family!) 
   type Witness f = r | r -> f                 
   -- | the prime characteristic
@@ -99,7 +99,7 @@ multGroup w = scanl1 (*) list where
 
 -- | Computes a table of discrete logarithms with respect to the primitive 
 -- generator. Note: zero is not present in the resulting map.
-discreteLogTable :: forall f. (Ord f, Field f) => Witness f -> Map f Int
+discreteLogTable :: forall f. Field f => Witness f -> Map f Int
 discreteLogTable witness = Map.fromList (worker 0 (one witness)) where
   g = primGen   witness
   q = fieldSize witness

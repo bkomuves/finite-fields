@@ -13,7 +13,17 @@
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, TypeFamilies #-}
 {-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
 
-module Math.FiniteField.PrimeField.Small where
+module Math.FiniteField.PrimeField.Small
+  ( -- * Witness for the existence of the field
+    WitnessFp(..)
+  , SomeWitnessFp(..)
+  , mkSmallPrimeField
+  , unsafeSmallPrimeField
+    -- * Field elements
+  , Fp
+  , primRoot
+  )
+  where
 
 --------------------------------------------------------------------------------
 
@@ -28,7 +38,7 @@ import System.Random ( RandomGen , randomR )
 import Math.FiniteField.Primes
 import Math.FiniteField.TypeLevel
 import Math.FiniteField.Class 
-import Math.FiniteField.Conway ( lookupConwayPrimRoot_ )
+import Math.FiniteField.Conway.Internal ( lookupConwayPrimRoot_ )
 
 import qualified Math.FiniteField.PrimeField.Small.Raw as Raw
 

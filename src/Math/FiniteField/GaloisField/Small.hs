@@ -17,7 +17,16 @@
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, GADTs, TypeFamilies #-}
 {-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
 
-module Math.FiniteField.GaloisField.Small where
+module Math.FiniteField.GaloisField.Small
+  ( -- * Witness for the existence of the field
+    WitnessGF(..)
+  , SomeWitnessGF(..)
+  , mkGaloisField
+  , unsafeGaloisField
+    -- * Field elements
+  , GF
+  )
+  where
 
 --------------------------------------------------------------------------------
 
@@ -38,6 +47,7 @@ import System.Random ( RandomGen , randomR )
 import Math.FiniteField.Class 
 import Math.FiniteField.TypeLevel
 import Math.FiniteField.Conway
+import Math.FiniteField.Conway.Internal
 import Math.FiniteField.Primes
 import Math.FiniteField.Misc
 
@@ -57,20 +67,43 @@ deriving instance Show (WitnessGF p m)
 gfParams :: WitnessGF p m -> (Word64,Int)
 gfParams w = case w of
   WitnessFp p -> (fromSmallPrime p, 1)
-  WitnessFq c -> conwayParams c
+  WitnessFq c -> conwayParams_ c
 
 data SomeWitnessGF 
   = forall p m. SomeWitnessGF (WitnessGF p m)
 
 deriving instance Show SomeWitnessGF
 
+-- | Usage:
+--
+-- > mkGaloisField p m
+-- 
+-- to construct the field with @q = p^m@ elements
+--
+-- Implementation note: For @m=1@ we may do a primality test, which is very 
+-- slow at the moment. You can use 'unsafeGaloisField' below to avoid this.
+--
 mkGaloisField :: Int -> Int -> Maybe SomeWitnessGF
 mkGaloisField p m = case m of
-  1  -> case someSNat64 (fromIntegral p) of 
-          SomeSNat64 sp -> (SomeWitnessGF . WitnessFp) <$> isSmallPrime sp 
+  1  -> case lookupSomeConwayPoly p m of
+          Just _  -> case someSNat64 (fromIntegral p) of 
+                       SomeSNat64 sp -> Just (SomeWitnessGF $ WitnessFp $ believeMeItsASmallPrime sp)
+          Nothing -> case someSNat64 (fromIntegral p) of 
+                       SomeSNat64 sp -> (SomeWitnessGF . WitnessFp) <$> isSmallPrime sp 
   _  -> case lookupSomeConwayPoly p m of 
           Nothing -> Nothing
           Just (SomeConwayPoly cw) -> Just (SomeWitnessGF (WitnessFq cw))
+
+-- | In the case of @m=1@ you are responsible for guaranteeing that @p@ is a prime
+-- (for @m>1@ we have to look up a Conway polynomial anyway).
+--
+unsafeGaloisField :: Int -> Int -> SomeWitnessGF
+unsafeGaloisField p m = case m of
+  1  -> case someSNat64 (fromIntegral p) of 
+          SomeSNat64 sp -> (SomeWitnessGF . WitnessFp) (believeMeItsASmallPrime sp)
+  _  -> case lookupSomeConwayPoly p m of 
+          Nothing -> error $ "unsafeGaloisField: cannot find Conway polynomial for GF(" ++ show p ++ "^" ++ show m ++ ")"
+          Just (SomeConwayPoly cw) -> SomeWitnessGF (WitnessFq cw)
 
 --------------------------------------------------------------------------------  
 
@@ -82,8 +115,8 @@ data GF (p :: Nat) (m :: Nat) where
 -- | An alias for @GF p m@, that is, the elements of the Galois field of order @q = p^m@
 type Fq p m = GF p m
 
-fqWitness :: GF p m -> WitnessGF p m
-fqWitness element = case element of
+gfWitness :: GF p m -> WitnessGF p m
+gfWitness element = case element of
   Fp p _ -> WitnessFp p
   Fq c _ -> WitnessFq c
 
@@ -97,7 +130,7 @@ fp witness x =
   where
     fpM :: HasConwayPoly p m -> Word64 -> GF p m
     fpM conway x = Fq conway (Vec.fromListN m (y : replicate (m-1) 0)) where
-      (p,m) = conwayParams conway
+      (p,m) = conwayParams_ conway
       y = if x >= 0 && x < p then fromIntegral x else fromIntegral (mod x p) :: Word32
     
     fp1 :: IsSmallPrime p -> Word64 -> GF p 1
@@ -119,7 +152,7 @@ randomFq witness gen = case witness of
     let !q = fromSmallPrime p 
     in  case randomR (0,q-1) gen of { (x, gen') -> (Fp p x, gen') } 
   WitnessFq c -> 
-    let !(p,m) = conwayParams c
+    let !(p,m) = conwayParams_ c
     in  case mapAccumL (\ !g _ -> swap (randomR (0,p-1) g) ) gen [1..m] of
           (gen' , xs) -> ( Fq c (Vec.fromList (map fromIntegral xs)) , gen' )
 
@@ -130,7 +163,7 @@ gen conway = gen' conway 1
 -- | The field element corresponding to the polynomial @c*X@
 gen' :: HasConwayPoly p m -> Word64 -> GF p m
 gen' conway x = Fq conway (Vec.fromListN m (0 : y : replicate (m-2) 0)) where
-  (p,m) = conwayParams conway
+  (p,m) = conwayParams_ conway
   y = fromIntegral (mod x p) :: Word32
 
 primGenFq :: WitnessGF p m -> GF p m 
@@ -157,7 +190,7 @@ instance Ord (GF p m) where
 instance Show (GF p m) where
   show (Fp prime   x  ) = "<" ++ show x ++ " mod " ++ show (fromSmallPrime prime) ++ ">"
   show (Fq witness vec) = "<" ++ intercalate "+" list ++ " mod " ++ show p ++ ">" where
-    (p,m) = conwayParams witness
+    (p,m) = conwayParams_ witness
     list = zipWith f [0..] (Vec.toList vec) 
     f  0 !v = show v
     f  1 !v = show v ++ "*g"
@@ -183,7 +216,7 @@ instance Field (GF p m) where
   dimension        !w = fromIntegral (snd (gfParams w))
   fieldSize        !w = case gfParams w of (p,m) -> (fromIntegral p :: Integer) ^ m
   enumerate        !w = enumerateFq w
-  witnessOf        !x = fqWitness x
+  witnessOf        !x = gfWitness x
   embed         !w !x = fp w (fromInteger  x)
   embedSmall    !w !x = fp w (fromIntegral x)
   randomFieldElem  !w = randomFq w
@@ -207,7 +240,7 @@ enumerateFq witness =
   where
     enumerateFpM :: HasConwayPoly p m -> [GF p m]
     enumerateFpM conway = [ Fq conway vec | vec <- vecs ] where
-      (p,m) = conwayParams conway
+      (p,m) = conwayParams_ conway
       shape = replicate m (fromIntegral (p-1) :: Word32)
       vecs = map (Vec.fromListN m) (word32Tuples' shape)
     

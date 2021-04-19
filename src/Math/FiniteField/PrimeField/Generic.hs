@@ -4,7 +4,16 @@
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, TypeFamilies #-}
 {-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
 
-module Math.FiniteField.PrimeField.Generic where
+module Math.FiniteField.PrimeField.Generic 
+  ( -- * Witness for the existence of the field
+    WitnessFp(..)
+  , SomeWitnessFp(..)
+  , mkPrimeField
+  , unsafePrimeField
+    -- * Field elements
+  , Fp
+  )
+  where
 
 --------------------------------------------------------------------------------
 

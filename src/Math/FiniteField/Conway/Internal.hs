@@ -10,13 +10,15 @@
 -- can be controlled more precisely.
 --
 
-{-# LANGUAGE ForeignFunctionInterface, BangPatterns #-}
+{-# LANGUAGE ForeignFunctionInterface, BangPatterns, KindSignatures, GADTs #-}
 module Math.FiniteField.Conway.Internal where
 
 --------------------------------------------------------------------------------
 
 import Data.Word
 import Data.Bits
+
+import GHC.TypeNats (Nat)
 
 import qualified Data.IntMap.Strict as IntMap
 import Data.IntMap.Strict (IntMap)
@@ -28,6 +30,35 @@ import Foreign.Marshal
 import Foreign.Marshal.Array
 
 import qualified System.IO.Unsafe as Unsafe
+
+--------------------------------------------------------------------------------
+-- * The witness (it's here so internal modules can acces the inside of it)
+
+newtype HasConwayPoly (p :: Nat) (m :: Nat) where
+  ConwayWitness :: Ptr Word32 -> HasConwayPoly p m
+
+fromConwayPoly :: HasConwayPoly p m -> Ptr Word32
+fromConwayPoly (ConwayWitness ptr) = ptr
+
+-- | @(prime,exponent)@
+conwayParams_ :: HasConwayPoly p m -> (Word64,Int)
+conwayParams_ (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
+  (p,m) <- getConwayEntryParams ptr
+  return (fromIntegral p, fromIntegral m)
+
+conwayPrime_ :: HasConwayPoly p m -> Word64
+conwayPrime_ (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
+  (p,_) <- getConwayEntryParams ptr
+  return p
+
+-- | We have some Conway polynomials for @m=1@ too; the roots of 
+-- these linear polynomials are primitive roots in @F_p@
+lookupConwayPrimRoot_ :: Int -> Maybe Word64
+lookupConwayPrimRoot_ !p = case IntMap.lookup (encodePrimeExpo p 1) (fromConwayTable theConwayTable) of
+  Nothing   -> Nothing
+  Just ptr  -> case (Unsafe.unsafePerformIO $ marshalConwayEntry ptr) of
+    (_,_,[c,1])  -> Just (fromIntegral p - fromIntegral c)
+    _            -> error "lookupConwayPrimRoot: fatal error (should not happen)" 
 
 --------------------------------------------------------------------------------
 -- * The C table
