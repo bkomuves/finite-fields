@@ -22,8 +22,9 @@ Tested-With:          GHC == 8.6.5
 Cabal-Version:        1.24
 Build-Type:           Custom
 
-extra-source-files:   conway/*
-                      examples/*
+extra-source-files:   conway/ConwayPolynomials.txt
+                      conway/README.txt
+                      examples/curve_count.hs
 
 source-repository head
   type:                 git
