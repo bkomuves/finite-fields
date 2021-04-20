@@ -34,19 +34,19 @@ import qualified System.IO.Unsafe as Unsafe
 --------------------------------------------------------------------------------
 -- * The witness (it's here so internal modules can acces the inside of it)
 
-newtype HasConwayPoly (p :: Nat) (m :: Nat) where
-  ConwayWitness :: Ptr Word32 -> HasConwayPoly p m
+newtype ConwayPoly (p :: Nat) (m :: Nat) where
+  ConwayWitness :: Ptr Word32 -> ConwayPoly p m
 
-fromConwayPoly :: HasConwayPoly p m -> Ptr Word32
+fromConwayPoly :: ConwayPoly p m -> Ptr Word32
 fromConwayPoly (ConwayWitness ptr) = ptr
 
 -- | @(prime,exponent)@
-conwayParams_ :: HasConwayPoly p m -> (Word64,Int)
+conwayParams_ :: ConwayPoly p m -> (Word64,Int)
 conwayParams_ (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (p,m) <- getConwayEntryParams ptr
   return (fromIntegral p, fromIntegral m)
 
-conwayPrime_ :: HasConwayPoly p m -> Word64
+conwayPrime_ :: ConwayPoly p m -> Word64
 conwayPrime_ (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (p,_) <- getConwayEntryParams ptr
   return p

@@ -8,7 +8,7 @@
 {-# LANGUAGE GADTs, ExistentialQuantification, DataKinds, KindSignatures #-}
 
 module Math.FiniteField.Conway 
-  ( HasConwayPoly
+  ( ConwayPoly
   , SomeConwayPoly(..)
   , conwayPrime  , conwayDim
   , conwayParams , conwayParams'
@@ -57,45 +57,45 @@ import Math.FiniteField.Conway.Internal
 --------------------------------------------------------------------------------
 -- * Witness for the existence of precomputed Conway polynomials
 
-data SomeConwayPoly = forall p m. SomeConwayPoly (HasConwayPoly p m) 
+data SomeConwayPoly = forall p m. SomeConwayPoly (ConwayPoly p m) 
 
 deriving instance Show SomeConwayPoly
 
-conwayProxies :: HasConwayPoly p m -> (Proxy p, Proxy m)
+conwayProxies :: ConwayPoly p m -> (Proxy p, Proxy m)
 conwayProxies _ = (Proxy, Proxy)
 
-instance Show (HasConwayPoly p m) where
+instance Show (ConwayPoly p m) where
   show witness = "ConwayPoly[" ++ show p ++ "^" ++ show m ++ "]" where
     (p,m) = conwayParams_ witness
 
 -- | The prime characteristic @p@
-conwayPrime :: HasConwayPoly p m -> IsSmallPrime p
+conwayPrime :: ConwayPoly p m -> IsSmallPrime p
 conwayPrime (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (p,_) <- getConwayEntryParams ptr
   return (believeMeItsASmallPrime (SNat64 p))
 
 -- | The dimension @m@ of @F_q@ over @F_p@
-conwayDim :: HasConwayPoly p m -> Int
+conwayDim :: ConwayPoly p m -> Int
 conwayDim (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (_,m) <- getConwayEntryParams ptr
   return (fromIntegral m)
 
 -- | The pair @(p,m)@
-conwayParams :: HasConwayPoly p m -> (Int,Int)
+conwayParams :: ConwayPoly p m -> (Int,Int)
 conwayParams witness = (fromIntegral p, fromIntegral m) where
   (p,m) = conwayParams_ witness
 
-conwayParams' :: HasConwayPoly p m -> (SNat64 p, SNat64 m)
+conwayParams' :: ConwayPoly p m -> (SNat64 p, SNat64 m)
 conwayParams' witness = (SNat64 p, SNat64 (fromIntegral m)) where
   (p,m) = conwayParams_ witness
 
-conwayCoefficients :: HasConwayPoly p m -> [Word64]
+conwayCoefficients :: ConwayPoly p m -> [Word64]
 conwayCoefficients (ConwayWitness ptr) = Unsafe.unsafePerformIO $ do
   (_,_,list) <- marshalConwayEntry ptr
   return list
 
 -- | Usage: @lookupConwayPoly sp sm@ for @q = p^m@
-lookupConwayPoly :: SNat64 p -> SNat64 m -> Maybe (HasConwayPoly p m)
+lookupConwayPoly :: SNat64 p -> SNat64 m -> Maybe (ConwayPoly p m)
 lookupConwayPoly !sp !sm = 
   let p = fromIntegral (fromSNat64 sp)
       m = fromIntegral (fromSNat64 sm)
@@ -103,7 +103,7 @@ lookupConwayPoly !sp !sm =
        Nothing  -> Nothing
        Just ptr -> Just (ConwayWitness ptr)
 
-unsafeLookupConwayPoly :: SNat64 p -> SNat64 m -> HasConwayPoly p m
+unsafeLookupConwayPoly :: SNat64 p -> SNat64 m -> ConwayPoly p m
 unsafeLookupConwayPoly sp sm = case lookupConwayPoly sp sm of
   Nothing  -> error "unsafeLookupConwayPoly: Conway polynomial not found"
   Just cw  -> cw

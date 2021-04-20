@@ -60,7 +60,7 @@ import qualified Math.FiniteField.GaloisField.Small.Internal as Quo
 -- | We need either a Conway polynomial, or in the @m=1@ case, a proof that @p@ is prime
 data WitnessGF (p :: Nat) (m :: Nat) where
   WitnessFp :: IsSmallPrime  p   -> WitnessGF p 1
-  WitnessFq :: HasConwayPoly p m -> WitnessGF p m
+  WitnessFq :: ConwayPoly p m -> WitnessGF p m
 
 deriving instance Show (WitnessGF p m)
 
@@ -110,7 +110,7 @@ unsafeGaloisField p m = case m of
 -- | An element of the Galois field of order @q = p^m@
 data GF (p :: Nat) (m :: Nat) where
   Fp :: {-# UNPACK #-} !(IsSmallPrime  p  ) -> {-# UNPACK #-} !Word64          -> GF p 1
-  Fq :: {-# UNPACK #-} !(HasConwayPoly p m) ->                !(Vector Word32) -> GF p m
+  Fq :: {-# UNPACK #-} !(ConwayPoly p m) ->                !(Vector Word32) -> GF p m
 
 -- | An alias for @GF p m@, that is, the elements of the Galois field of order @q = p^m@
 type Fq p m = GF p m
@@ -128,7 +128,7 @@ fp witness x =
     WitnessFq c -> fpM c x
 
   where
-    fpM :: HasConwayPoly p m -> Word64 -> GF p m
+    fpM :: ConwayPoly p m -> Word64 -> GF p m
     fpM conway x = Fq conway (Vec.fromListN m (y : replicate (m-1) 0)) where
       (p,m) = conwayParams_ conway
       y = if x >= 0 && x < p then fromIntegral x else fromIntegral (mod x p) :: Word32
@@ -157,11 +157,11 @@ randomFq witness gen = case witness of
           (gen' , xs) -> ( Fq c (Vec.fromList (map fromIntegral xs)) , gen' )
 
 -- | The field element corresponding to the polynomial @X@ (which is a primitive generator)
-gen :: HasConwayPoly p m -> GF p m
+gen :: ConwayPoly p m -> GF p m
 gen conway = gen' conway 1
 
 -- | The field element corresponding to the polynomial @c*X@
-gen' :: HasConwayPoly p m -> Word64 -> GF p m
+gen' :: ConwayPoly p m -> Word64 -> GF p m
 gen' conway x = Fq conway (Vec.fromListN m (0 : y : replicate (m-2) 0)) where
   (p,m) = conwayParams_ conway
   y = fromIntegral (mod x p) :: Word32
@@ -238,7 +238,7 @@ enumerateFq witness =
     WitnessFq c -> enumerateFpM c
 
   where
-    enumerateFpM :: HasConwayPoly p m -> [GF p m]
+    enumerateFpM :: ConwayPoly p m -> [GF p m]
     enumerateFpM conway = [ Fq conway vec | vec <- vecs ] where
       (p,m) = conwayParams_ conway
       shape = replicate m (fromIntegral (p-1) :: Word32)
