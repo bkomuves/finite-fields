@@ -12,6 +12,7 @@ import Test.FieldTests
   , small_primefield_tests
   , small_galoisfield_tests
   , small_zechfield_tests
+  , small_cfield_tests
   )
 
 --------------------------------------------------------------------------------
@@ -24,6 +25,7 @@ tests = testGroup "Tests"
   , small_primefield_tests
   , small_galoisfield_tests
   , small_zechfield_tests
+  , small_cfield_tests
   ]
         
 --------------------------------------------------------------------------------

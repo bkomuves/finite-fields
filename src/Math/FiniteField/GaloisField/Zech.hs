@@ -6,10 +6,9 @@
 -- When \"creating\" a field, we precompute the Zech logarithm table. 
 -- After that, computations should be fast.
 --
--- This is practical up to fields of size @10^5 -- 10^6@ 
+-- This is practical up to fields of size @10^5@-@10^6@ 
 --
--- TODO: also export the tables to C, and write C implementation of
--- of the field operations.
+-- TODO: also export the tables to C source code, and\/or binary data
 --
 
 {-# LANGUAGE BangPatterns, ScopedTypeVariables, TypeFamilies #-}
@@ -17,7 +16,7 @@
 
 module Math.FiniteField.GaloisField.Zech 
   ( -- * Tables of Zech logarithms
-    ZechTable
+    ZechTable(..)
   , makeZechTable
     -- * Witness for the existence of the field
   , WitnessZech(..)
@@ -50,12 +49,13 @@ import qualified Math.FiniteField.GaloisField.Small as GF
 
 --------------------------------------------------------------------------------
 
+-- | A table of Zech logarithms (and some more data required for the operations)
 data ZechTable = ZechTable
-  { _zechParams :: !(Int32,Int32)     -- ^ @(p,m)@
-  , _qMinus1    :: !Int32             -- ^ @p^m-1 = q-1@ 
+  { _zechParams :: !(Int32,Int32)     -- ^ the parameters @(p,m)@
+  , _qMinus1    :: !Int32             -- ^ order of the multiplicative group @q-1 = p^m - 1@ 
   , _logMinus1  :: !Int32             -- ^ an integer @e@ such that @g^e = -1@
-  , _embedding  :: !(Vector Int32)    -- ^ embedding of F_p into F_q (including 0)
-  , _zechLogs   :: !(Vector Int32)    -- ^ Zech's logarithms (except 0)
+  , _embedding  :: !(Vector Int32)    -- ^ embedding of @F_p@ into @F_q@ (including 0)
+  , _zechLogs   :: !(Vector Int32)    -- ^ Zech's logarithms (except for 0; so the length is @q-1@)
   }
   deriving Show
 
@@ -81,6 +81,19 @@ unsafeZechField p m = case mkZechField p m of
 
 --------------------------------------------------------------------------------
 
+-- | An element of the field @GF(p^m)@
+--
+-- Implementation note: 
+-- Field elements are represented by integers from the interval @[-1...q-2]@:
+--
+-- * @-1@ corresponds to @0@
+--
+-- * @0@  corresponds to @1@
+--
+-- * @1@  corresponds to @g@
+--
+-- * @k@  corresponds to @g^k@
+--
 data Zech (p :: Nat) (m :: Nat) = Zech !ZechTable {-# UNPACK #-} !Int32
 
 instance Eq (Zech p m) where

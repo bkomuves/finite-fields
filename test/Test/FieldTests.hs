@@ -28,6 +28,9 @@ small_galoisfield_tests = testGroup "GaloisField/Small" (map someFieldProps smal
 small_zechfield_tests :: TestTree
 small_zechfield_tests = testGroup "GaloisField/Zech" (map someFieldProps small_zechfields)
 
+small_cfield_tests :: TestTree
+small_cfield_tests = testGroup "GaloisField/Zech/C" (map someFieldProps small_cfields)
+
 --------------------------------------------------------------------------------
 
 someFieldProps :: (String,TestField) -> TestTree

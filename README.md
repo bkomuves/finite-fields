@@ -5,23 +5,6 @@ Finite fields
 This is a Haskell library implementing arithmetics in finite fields.
 
 
-Plans
------
-
-The plan is to have different implementations tailored to different use cases:
-
-* generic prime fields
-* "small" prime fields (fitting into a machine word)
-* finite fields as vector spaces over prime fields, using precomputed Conway polynomials
-* precalculated tables (eg. multiplication tables, Zech logarithm, etc) for very small fields 
-* C code generation (with tables) for maximum efficiency for very small fields 
-* generic field extensions
-* big finite fields relevant for cryptography
-* maybe even JIT compiling specific fields would make sense?
-* optional: elliptic curves over finite fields? (again we could have "small" curves 
-  for algebraic geometry and "very big" curves for cryptography...)
-
-
 Status
 ------
 
@@ -31,6 +14,18 @@ So far we have implemented:
 * small prime fields, where small means `p < 2^31` - module  `Math.FiniteField.PrimeField.Small`
 * small Galois fields, using a precomputed table of Conway polynomials - module `Math.FiniteField.GaloisField.Small`
 * small Galois fields, using tables of Zech's logarithm
+* C implementation of the Zech's logarithm stuff
+
+
+Further plans
+--------------
+
+* generic field extensions
+* big finite fields relevant for cryptography
+* maybe even JIT compiling specific fields would make sense?
+* optional: elliptic curves over finite fields? (again we could have "small" curves 
+  for algebraic geometry and "very big" curves for cryptography...)
+
 
 How to use
 ----------

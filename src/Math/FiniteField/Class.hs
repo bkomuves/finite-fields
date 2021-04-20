@@ -25,7 +25,7 @@ class (Eq f, Ord f, Show f, Num f, Fractional f, Show (Witness f)) => Field f wh
   -- | the prime characteristic
   characteristic   :: Witness f -> Integer   
   -- | dimension over the prime field (the exponent @m@ in @q=p^m@)
-  dimension        :: Witness f -> Integer   
+  dimension        :: Witness f -> Integer    -- TODO: this should be Int
   -- | the size (or order) of the field
   fieldSize        :: Witness f -> Integer   
   -- | The additive identity of the field
