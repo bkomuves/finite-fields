@@ -1,5 +1,5 @@
 Name:                 finite-fields
-Version:              0.1
+Version:              0.2
 Synopsis:             Arithmetic in finite fields
 
 Description:          Implementation of arithmetic in finite fields (prime fields
