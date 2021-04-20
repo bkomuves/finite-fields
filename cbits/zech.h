@@ -34,6 +34,8 @@
 typedef int32_t* Zech;
 typedef int32_t  GF;
 
+Zech loadZechTable(const char*);
+
 GF zech_neg(Zech, GF);
 GF zech_add(Zech, GF, GF);
 GF zech_sub(Zech, GF, GF);
