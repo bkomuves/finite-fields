@@ -1,7 +1,7 @@
 
 -- | Type class interface to different implementations of finite fields
 
-{-# LANGUAGE BangPatterns, FlexibleContexts #-}
+{-# LANGUAGE BangPatterns, FlexibleContexts, TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables, TypeFamilies, TypeFamilyDependencies #-}
 {-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
 
@@ -50,15 +50,18 @@ class (Eq f, Ord f, Show f, Num f, Fractional f, Show (Witness f)) => Field f wh
   -- | exponentiation 
   power            :: f -> Integer -> f                 
   powerSmall       :: f -> Int     -> f            
+  -- | Frobenius automorphism @x -> x^p@
+  frobenius        :: f -> f
   -- | list of field elements (of course it's only useful for very small fields)
   enumerate        :: Witness f -> [f]                  
 
   -- default implementations
 
   embedSmall !w !x = embed w (fromIntegral x)
-  powerSmall !x !e = power x (fromIntegral e)
+  powerSmall !x !e = power x (fromIntegral e)      -- it's important not to use powerDefault here, because 'power' may be more efficient
   fieldSize  !w    = characteristic w ^ dimension w
-  power            = powerDefault
+  power            = powerDefault 
+  frobenius     !x = power x (characteristic (witnessOf x))
 
   zero       !w    = embedSmall w 0
   one        !w    = embedSmall w 1
@@ -112,7 +115,7 @@ discreteLogTable witness = Map.fromList (worker 0 (one witness)) where
 --------------------------------------------------------------------------------
 
 -- | Generic exponentiation
-powerDefault :: forall f. Field f => f -> Integer -> f
+powerDefault :: forall f. (Field f) => f -> Integer -> f
 powerDefault !z !e 
   | isZero z  = z 
   | e == 0    = one w

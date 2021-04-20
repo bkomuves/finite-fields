@@ -151,6 +151,7 @@ instance Field (Fp p) where
   witnessOf            = fpWitness
   power                = fpPow
   powerSmall       x e = fpPow_ x (fromIntegral e)
+  frobenius            = id
   randomFieldElem    w = case w of { WitnessFp p -> randomFp    p } 
   randomInvertible   w = case w of { WitnessFp p -> randomInvFp p }
   zero w = Fp (fromWitnessFp w) 0

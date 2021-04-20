@@ -48,6 +48,8 @@ fieldProperties groupName unwrap field = testGroup groupName
   , testProperty "x ^ (q-1) == 1"                        (unaryNZ  unwrap prop_mul_order         field)
   , testProperty "x ^ q     == x"                        (unary    unwrap prop_pow_vs_id         field)
   , testProperty "power vs. iterated product"            (binaryI  unwrap prop_pow_vs_product    field)
+  , testProperty "Frobenius vs. definition"              (unary    unwrap prop_frobenius         field)
+  , testProperty "freshman's dream"                      (binary   unwrap prop_freshmans_dream   field)
   ]
 
 --------------------------------------------------------------------------------
@@ -166,6 +168,12 @@ prop_pow_vs_product field x e
   | e <  0 =  powerSmall x e == foldl1 (*) (replicate (abs e) (inverse x))
   | e == 0 =  if isZero x
                 then powerSmall x e == zero field    -- it seems this is the "correct" choice
-                else powerSmall x e == one  field    -- for example 0 = 0^(q-1) == 0^0 /= 1 
+                else powerSmall x e == one  field    -- for example 0 == 0^(q-1) == 0^0 /= 1 
+
+prop_frobenius :: Field f => Witness f -> f -> Bool
+prop_frobenius field x = frobenius x == power x (characteristic field)
+
+prop_freshmans_dream :: Field f => Witness f -> f -> f -> Bool
+prop_freshmans_dream field x y = frobenius x + frobenius y == frobenius (x+y)
 
 --------------------------------------------------------------------------------

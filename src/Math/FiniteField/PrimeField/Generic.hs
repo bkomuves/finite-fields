@@ -119,6 +119,7 @@ instance Field (Fp p) where
   primGen             = error "PrimeField/Generic/Fp: primGen: not implemented"
   witnessOf           = fpWitness
   power               = fpPow
+  frobenius           = id
   randomFieldElem   w = case w of { WitnessFp p -> randomFp    p } 
   randomInvertible  w = case w of { WitnessFp p -> randomInvFp p }
   zero w = Fp (fromWitnessFp w) 0
