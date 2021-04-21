@@ -18,6 +18,8 @@ import Data.Word
 import GHC.TypeNats
 import Data.Proxy
 
+import Unsafe.Coerce as Unsafe
+
 --------------------------------------------------------------------------------
 -- * Singleton types
 
@@ -93,6 +95,11 @@ someSNat64 n
 someSNat64_ :: Word64 -> SomeSNat64
 someSNat64_ n = case someNatVal (fromIntegral n) of
   SomeNat proxy -> SomeSNat64 (proxyToSNat64 proxy)
+
+snat64IfOneThenElse :: forall (n :: Nat) (f :: Nat -> *). SNat64 n -> (SNat64 1 -> f 1) -> (SNat64 n -> f n) -> f n
+snat64IfOneThenElse sn@(SNat64 n) thenBranch elseBranch
+  | n == 1    = Unsafe.unsafeCoerce (thenBranch (SNat64 1))
+  | otherwise = elseBranch sn
 
 --------------------------------------------------------------------------------
 -- * sanity checking

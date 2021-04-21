@@ -21,8 +21,10 @@ import qualified Data.Map.Strict as Map
 import System.Random ( RandomGen )
 
 import Math.FiniteField.TypeLevel
+import Math.FiniteField.TypeLevel.Singleton
 
 --------------------------------------------------------------------------------
+-- * Fields
 
 -- | A class for witness types (these witness the existence of a field)
 class 
@@ -98,6 +100,18 @@ class
     randomInvertible !w !g = case randomFieldElem w g of 
       (x,g') -> if isZero x then randomInvertible w g' else (x,g')
 
+fieldPrimeSNat :: Field f => Witness f -> SNat (Prime f)
+fieldPrimeSNat w = SNat (characteristic w)
+
+fieldPrimeSNat64 :: Field f => Witness f -> SNat64 (Prime f)
+fieldPrimeSNat64 w = SNat64 (fromInteger $ characteristic w)
+
+fieldDimSNat :: Field f => Witness f -> SNat (Dim f)
+fieldDimSNat w = SNat (dimension w)
+
+fieldDimSNat64 :: Field f => Witness f -> SNat64 (Dim f)
+fieldDimSNat64 w = SNat64 (fromInteger $ dimension w)
+
 --------------------------------------------------------------------------------
 
 data SomeField 
@@ -106,6 +120,37 @@ data SomeField
 deriving instance Show SomeField
 
 --------------------------------------------------------------------------------
+
+-- -- * Subfields
+-- 
+-- class 
+--   ( FieldWitness (AmbientWitness w)
+--   , FieldWitness (SubWitness     w) 
+--   ) => SubFieldWitness w 
+--   where
+--     type AmbientWitness w :: *
+--     type SubWitness     w :: *
+-- 
+-- class (Field (AmbientField s) , Field (SubField s)) => SubField s where
+--   type AmbientField s :: *
+--   type SubField     s :: *
+--   type SubFieldWitness 
+--   embedSubField :: SubField s -> AmbientField s 
+--   mbSubField    :: AmbientField s -> Maybe (SubField s)
+--   isSubField    :: AmbientField s -> Bool
+--   coordinates   :: AmbientField s -> [SubField s]
+
+--------------------------------------------------------------------------------
+-- * Some generic functions
+
+-- | Returns @"GF(p)"@ or @"GF(p^m)"
+fieldName :: Field f => Witness f -> String
+fieldName w 
+  | m == 1     = "GF(" ++ show p ++ ")"
+  | otherwise  = "GF(" ++ show p ++ "^" ++ show m ++ ")"
+  where
+    p = characteristic w
+    m = dimension      w
 
 -- | The multiplicate inverse (synonym for 'recip')
 inverse :: Field f => f -> f
@@ -128,7 +173,8 @@ multGroup w = scanl1 (*) list where
 --------------------------------------------------------------------------------
 
 -- | Computes a table of discrete logarithms with respect to the primitive 
--- generator. Note: zero is not present in the resulting map.
+-- generator. Note: zero (that is, the additive identitiy of the field) 
+-- is not present in the resulting map.
 discreteLogTable :: forall f. Field f => Witness f -> Map f Int
 discreteLogTable witness = Map.fromList (worker 0 (one witness)) where
   g = primGen   witness

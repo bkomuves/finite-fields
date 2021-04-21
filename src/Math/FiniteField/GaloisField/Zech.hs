@@ -6,9 +6,9 @@
 -- When \"creating\" a field, we precompute the Zech logarithm table. 
 -- After that, computations should be fast.
 --
--- This is practical up to fields of size @10^5@-@10^6@ 
+-- This is practical up to fields of size @10^5@-@10^6@.
 --
--- TODO: also export the tables to C source code, and\/or binary data
+-- This representation also supports handling of subfields.
 --
 
 {-# LANGUAGE BangPatterns, ScopedTypeVariables, TypeFamilies #-}
@@ -23,8 +23,18 @@ module Math.FiniteField.GaloisField.Zech
   , SomeWitnessZech(..)
   , mkZechField
   , unsafeZechField
+  , constructZechField
     -- * Field elements
   , Zech
+    -- * Subfields
+    -- $subfield_doc
+  , SubField , ambientWitness , subFieldWitness , subFieldProof , fiberSize
+  , SomeSubField(..)
+  , constructSubField , enumerateSubFields
+  , embedSubField
+  , projectSubField
+  , isInSubField
+    -- , subFieldCoordinates
   )
   where 
 
@@ -43,6 +53,8 @@ import qualified Data.Vector.Unboxed as Vec
 import System.Random ( RandomGen , randomR )
 
 import Math.FiniteField.Class
+import Math.FiniteField.TypeLevel
+import Math.FiniteField.TypeLevel.Singleton
 
 import Math.FiniteField.GaloisField.Small ( GF , WitnessGF )
 import qualified Math.FiniteField.GaloisField.Small as GF
@@ -79,10 +91,86 @@ unsafeZechField p m = case mkZechField p m of
   Nothing   -> error $ "unsafeZechField: cannot find Conway polynomial for GF(" ++ show p ++ "^" ++ show m ++ ")"
   Just some -> some
 
+constructZechField :: SNat64 p -> SNat64 m -> Maybe (WitnessZech p m)
+constructZechField sp sm = case GF.constructGaloisField sp sm of 
+  Nothing   -> Nothing
+  Just wgf  -> Just (WitnessZech (makeZechTable wgf))
+
 instance FieldWitness (WitnessZech p m) where
   type FieldElem    (WitnessZech p m) = Zech p m
   type WitnessPrime (WitnessZech p m) = p
   type WitnessDim   (WitnessZech p m) = m
+
+--------------------------------------------------------------------------------
+
+-- $subfield_doc
+--
+-- A field of size @p^m@ has a unique subfield of size @p^k@ for all @k|m@.
+-- The Conway polynomials are constructed so that the Conway polynomials of
+-- the subfields are compatible with the Conway polynomial of the ambient
+-- field, in the sense that the canonical primitive generators @g@ of the ambient field
+-- and @h@ of the
+--
+-- > h = g ^ ((p^m-1)/(p^k-1))
+--
+-- This makes implementing subfields in the the discrete log representation 
+-- particularly simple.
+--
+
+-- | A witness for the subfield @GF(p,k)@ of @GF(p,m)@
+data SubField (p :: Nat) (m :: Nat) (k :: Nat) = SubField
+  { ambientWitness  :: !(WitnessZech p m)  -- ^ witness for the ambient field
+  , subFieldWitness :: !(WitnessZech p k)  -- ^ witness for the existence of the subfield
+  , subFieldProof   :: !(Divides k m)      -- ^ proof that @k@ divides @m@
+  , fiberSize       :: !Int32              -- ^ the quotient @(p^m-1)/(p^k-1)@
+  }
+  deriving Show
+
+-- | Some subfield of @GF(p,m)@
+data SomeSubField (p :: Nat) (m :: Nat) 
+  = forall k. SomeSubField (SubField p m k)
+
+deriving instance Show (SomeSubField p m)
+
+constructSubField :: WitnessZech p m -> Divides k m -> SubField p m k
+constructSubField ambientw proof = 
+  case constructZechField (fieldPrimeSNat64 ambientw) (divisorSNat proof) of
+    Nothing    -> error "GaloisField/Zech/constructSubField': fatal error: no Conway polynomial for the subfield (this should not happen)" 
+    Just subw  -> (SubField ambientw subw proof d) where
+      p = characteristic ambientw
+      m = dimension      ambientw
+      k = _divisor       proof
+      d = div (fromInteger p ^ m - 1) (fromInteger p ^ k - 1)
+
+constructSubField_ :: WitnessZech p m -> SNat64 k -> Maybe (SubField p m k)
+constructSubField_ ambientw sk@(SNat64 k) =
+  case divides sk (fieldDimSNat64 ambientw) of
+    Nothing    -> Nothing
+    Just proof -> Just (constructSubField ambientw proof)
+
+enumerateSubFields :: forall p m. WitnessZech p m -> [SomeSubField p m]
+enumerateSubFields ambientw = map construct (divisors (fieldDimSNat64 ambientw)) where
+  construct (Divisor proof) = SomeSubField (constructSubField ambientw proof)
+
+embedSubField :: SubField p m k -> Zech p k -> Zech p m
+embedSubField (SubField aw _ _ d) (Zech _ a) 
+  | a < 0      = Zech (fromWitnessZech aw)  a
+  | otherwise  = Zech (fromWitnessZech aw) (a*d)
+
+projectSubField :: SubField p m k -> Zech p m -> Maybe (Zech p k)
+projectSubField (SubField _ sw _ d) (Zech _ a) 
+  | a < 0      = Just (Zech (fromWitnessZech sw) a)
+  | otherwise  = case divMod a d of
+                   (b,r) -> if r == 0 then Just (Zech (fromWitnessZech sw) b) else Nothing
+
+isInSubField :: SubField p m k -> Zech p m -> Bool
+isInSubField (SubField _ sw _ d) (Zech _ a) 
+  | a < 0      = True
+  | otherwise  = mod a d == 0
+
+-- | @GF(p^m)@ as a vector space over @GF(p^k)@
+subFieldCoordinates :: SubField p m k -> Zech p m -> [Zech p k]
+subFieldCoordinates = error "subFieldCoordinates: how to implement this??"
 
 --------------------------------------------------------------------------------
 

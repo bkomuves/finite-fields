@@ -46,8 +46,10 @@ module Math.FiniteField.TypeLevel
   , isSmallPrime , believeMeItsASmallPrime
   , smallPrimeIsPrime , smallPrimeIsSmall , mkSmallPrime
     -- * Divisors
-  , Divides , divides
-  , Divisor(..) , divisor , divisors
+  , Divides , _dividend , _divisor , _quotient 
+  , dividendSNat , divisorSNat 
+  , divides
+  , Divisor(..) , constructDivisor , divisors
     -- * Proxy
   , proxyOf, proxyOf1
     -- * Sanity checking
@@ -177,6 +179,12 @@ data Divides (k :: Nat) (n :: Nat) = Divides
   , _quotient :: {-# UNPACK #-} !Word64    -- ^ @q=n/k@
   } 
 
+dividendSNat :: Divides k n -> SNat64 n
+dividendSNat (Divides n _ _) = SNat64 n
+
+divisorSNat :: Divides k n -> SNat64 k
+divisorSNat (Divides _ k _) = SNat64 k
+
 divides :: SNat64 k -> SNat64 n -> Maybe (Divides k n)
 divides (SNat64 k) (SNat64 n) = case divMod n k of
   (q,r) -> if r == 0 then Just (Divides n k q) else Nothing
@@ -189,8 +197,8 @@ data Divisor (n :: Nat)
 
 deriving instance Show (Divisor n)
 
-divisor :: SNat64 n -> SNat64 k -> Maybe (Divisor n)
-divisor sn sk = case divides sk sn of 
+constructDivisor :: SNat64 n -> SNat64 k -> Maybe (Divisor n)
+constructDivisor sn sk = case divides sk sn of 
   Nothing -> Nothing
   Just d  -> Just (Divisor d)
 
@@ -199,7 +207,7 @@ divisors sn@(SNat64 nn) = map worker ds where
     ds = sort (map fromIntegral $ Primes.divisors (fromIntegral nn)) :: [Word64]
     worker :: Word64 -> Divisor n
     worker d = case someSNat64_ d of
-     SomeSNat64 sd -> case divisor sn sd of
+     SomeSNat64 sd -> case constructDivisor sn sd of
       Just proof     -> proof
       Nothing        -> error "divisors: fatal error, should not happen"
 

@@ -15,7 +15,7 @@
 --
 
 {-# LANGUAGE BangPatterns, DataKinds, KindSignatures, GADTs, TypeFamilies #-}
-{-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
+{-# LANGUAGE ScopedTypeVariables, ExistentialQuantification, StandaloneDeriving #-}
 
 module Math.FiniteField.GaloisField.Small
   ( -- * Witness for the existence of the field
@@ -23,6 +23,7 @@ module Math.FiniteField.GaloisField.Small
   , SomeWitnessGF(..)
   , mkGaloisField
   , unsafeGaloisField
+  , constructGaloisField
     -- * Field elements
   , GF
   )
@@ -46,6 +47,7 @@ import System.Random ( RandomGen , randomR )
 
 import Math.FiniteField.Class 
 import Math.FiniteField.TypeLevel
+import Math.FiniteField.TypeLevel.Singleton
 import Math.FiniteField.Conway
 import Math.FiniteField.Conway.Internal
 import Math.FiniteField.Primes
@@ -59,8 +61,8 @@ import qualified Math.FiniteField.GaloisField.Small.Internal as Quo
 
 -- | We need either a Conway polynomial, or in the @m=1@ case, a proof that @p@ is prime
 data WitnessGF (p :: Nat) (m :: Nat) where
-  WitnessFp :: IsSmallPrime  p   -> WitnessGF p 1
-  WitnessFq :: ConwayPoly p m -> WitnessGF p m
+  WitnessFp :: IsSmallPrime p   -> WitnessGF p 1
+  WitnessFq :: ConwayPoly   p m -> WitnessGF p m
 
 deriving instance Show (WitnessGF p m)
 
@@ -84,6 +86,9 @@ deriving instance Show SomeWitnessGF
 -- slow at the moment. You can use 'unsafeGaloisField' below to avoid this.
 --
 mkGaloisField :: Int -> Int -> Maybe SomeWitnessGF
+mkGaloisField p m = case (someSNat64 (fromIntegral p), someSNat64 (fromIntegral m)) of 
+  (SomeSNat64 sp, SomeSNat64 sm) -> SomeWitnessGF <$> (constructGaloisField sp sm)
+{-
 mkGaloisField p m = case m of
   1  -> case lookupSomeConwayPoly p m of
           Just _  -> case someSNat64 (fromIntegral p) of 
@@ -93,6 +98,7 @@ mkGaloisField p m = case m of
   _  -> case lookupSomeConwayPoly p m of 
           Nothing -> Nothing
           Just (SomeConwayPoly cw) -> Just (SomeWitnessGF (WitnessFq cw))
+-}
 
 -- | In the case of @m=1@ you are responsible for guaranteeing that @p@ is a prime
 -- (for @m>1@ we have to look up a Conway polynomial anyway).
@@ -105,6 +111,32 @@ unsafeGaloisField p m = case m of
           Nothing -> error $ "unsafeGaloisField: cannot find Conway polynomial for GF(" ++ show p ++ "^" ++ show m ++ ")"
           Just (SomeConwayPoly cw) -> SomeWitnessGF (WitnessFq cw)
 
+-- workaround hack for GHC typechecker...
+-- for some reason, "Maybe (WitnessGF p m)" is not valid otuput for "snat64IfOneThenElse"
+data MaybeWitnessGF p m 
+  = JustWitness (WitnessGF p m)
+  | NoWitness
+
+constructGaloisField :: forall p m. SNat64 p -> SNat64 m -> Maybe (WitnessGF p m)
+constructGaloisField sp sm = case constructGaloisField' sp sm of
+  NoWitness     -> Nothing
+  JustWitness w -> Just w
+
+constructGaloisField' :: forall p m. SNat64 p -> SNat64 m -> MaybeWitnessGF p m
+constructGaloisField' sp snatm = snat64IfOneThenElse snatm primeBranch powerBranch where
+
+  primeBranch :: SNat64 1 -> MaybeWitnessGF p 1
+  primeBranch s1 = case lookupConwayPoly sp s1 of
+    Just _  -> JustWitness (WitnessFp $ believeMeItsASmallPrime sp)
+    Nothing -> case isSmallPrime sp of
+      Just w  -> JustWitness (WitnessFp w)
+      Nothing -> NoWitness
+
+  powerBranch :: SNat64 m -> MaybeWitnessGF p m
+  powerBranch sm = case lookupConwayPoly sp sm of 
+    Nothing -> NoWitness
+    Just cw -> JustWitness (WitnessFq cw)
+
 instance FieldWitness (WitnessGF p m) where
   type FieldElem    (WitnessGF p m) = GF p m
   type WitnessPrime (WitnessGF p m) = p
@@ -114,8 +146,8 @@ instance FieldWitness (WitnessGF p m) where
 
 -- | An element of the Galois field of order @q = p^m@
 data GF (p :: Nat) (m :: Nat) where
-  Fp :: {-# UNPACK #-} !(IsSmallPrime  p  ) -> {-# UNPACK #-} !Word64          -> GF p 1
-  Fq :: {-# UNPACK #-} !(ConwayPoly p m) ->                !(Vector Word32) -> GF p m
+  Fp :: {-# UNPACK #-} !(IsSmallPrime p  ) -> {-# UNPACK #-} !Word64          -> GF p 1
+  Fq :: {-# UNPACK #-} !(ConwayPoly   p m) ->                !(Vector Word32) -> GF p m
 
 -- | An alias for @GF p m@, that is, the elements of the Galois field of order @q = p^m@
 type Fq p m = GF p m

@@ -15,7 +15,7 @@ So far we have implemented:
 * small Galois fields, using a precomputed table of Conway polynomials - module `Math.FiniteField.GaloisField.Small`
 * small Galois fields, using tables of Zech's logarithm
 * C implementation of the Zech's logarithm stuff
-
+* subfields (only for the Zech representation)
 
 Further plans
 --------------
