@@ -53,27 +53,6 @@ fieldProperties groupName unwrap field = testGroup groupName
   ]
 
 --------------------------------------------------------------------------------
--- hacking around newtypes and instances...
-
-unary :: (b -> a) -> (witness -> a -> result) -> (witness -> b -> result)
-unary unwrap f w x = f w (unwrap x) 
-
-unaryNZ :: (b -> a) -> (witness -> NonZero a -> result) -> (witness -> NonZero b -> result)
-unaryNZ unwrap f w (NonZero x) = f w (NonZero $ unwrap x)
-
-binary :: (b -> a) -> (witness -> a -> a -> result) -> (witness -> b -> b -> result)
-binary unwrap f w x y = f w (unwrap x) (unwrap y) 
-
-binaryNZ :: (b -> a) -> (witness -> a -> NonZero a -> result) -> (witness -> b -> NonZero b -> result)
-binaryNZ unwrap f w x (NonZero y) = f w (unwrap x) (NonZero $ unwrap y) 
-
-ternary :: (b -> a) -> (witness -> a -> a -> a -> result) -> (witness -> b -> b -> b -> result)
-ternary unwrap f w x y z = f w (unwrap x) (unwrap y) (unwrap z)
-
-binaryI :: (b -> a) -> (witness -> a -> Int -> result) -> (witness -> b -> Int -> result)
-binaryI unwrap f w x y = f w (unwrap x) y
-
---------------------------------------------------------------------------------
 
 prop_add_comm :: Field f => Witness f -> f -> f -> Bool
 prop_add_comm field x y = (x + y == y + x)

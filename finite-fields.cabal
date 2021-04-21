@@ -85,16 +85,20 @@ test-suite finite-fields-tests
   hs-source-dirs:       test
   main-is:              TestSuite.hs
 
-  other-modules:        Test.FieldProperties
-                        Test.FieldTests
+  other-modules:        Test.FieldTests
+                        Test.SubFields
                         Test.ConcreteFields
+                        Test.FieldProperties
+                        Test.WitnessStore
                         Test.Common
 
-  Build-Depends:        base >= 4 && < 5, random, finite-fields,
+  Build-Depends:        base >= 4 && < 5, 
+                        random, containers >= 0.5,
+                        finite-fields,
                         tasty, 
-                        tasty-hunit,
                         QuickCheck >= 2  , tasty-quickcheck
                         -- smallcheck >= 1.2, tasty-smallcheck
+                        -- tasty-hunit,
 
   Default-Language:     Haskell2010
   Default-Extensions:   CPP, BangPatterns, KindSignatures, DataKinds
