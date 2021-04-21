@@ -27,7 +27,7 @@
 -- so you still have to do the @case _ of@ thing).
 --
 
-{-# LANGUAGE DataKinds, KindSignatures, PolyKinds #-}
+{-# LANGUAGE DataKinds, KindSignatures, PolyKinds, ScopedTypeVariables #-}
 {-# LANGUAGE GADTs, ExistentialQuantification, StandaloneDeriving #-}
 
 module Math.FiniteField.TypeLevel
@@ -45,6 +45,9 @@ module Math.FiniteField.TypeLevel
   , IsSmallPrime , fromSmallPrime , fromSmallPrimeSigned , fromSmallPrimeInteger , fromSmallPrime' 
   , isSmallPrime , believeMeItsASmallPrime
   , smallPrimeIsPrime , smallPrimeIsSmall , mkSmallPrime
+    -- * Divisors
+  , Divides , divides
+  , Divisor(..) , divisor , divisors
     -- * Proxy
   , proxyOf, proxyOf1
     -- * Sanity checking
@@ -57,11 +60,12 @@ module Math.FiniteField.TypeLevel
 import Data.Int
 import Data.Word
 import Data.Proxy
+import Data.List
 
 import GHC.TypeNats
 import Data.Proxy
 
-import Math.FiniteField.Primes
+import qualified Math.FiniteField.Primes as Primes
 import Math.FiniteField.TypeLevel.Singleton
 
 --------------------------------------------------------------------------------
@@ -85,7 +89,7 @@ fromPrime (PrimeWitness sn) = fromSNat sn
 -- so it's only good for small numbers for now
 --
 isPrime :: SNat n -> Maybe (IsPrime n)
-isPrime sn = if (fromSNat sn > 1) && isPrimeTrialDivision (fromSNat sn)
+isPrime sn = if (fromSNat sn > 1) && Primes.isPrimeTrialDivision (fromSNat sn)
   then Just (PrimeWitness sn)
   else Nothing
 
@@ -143,7 +147,7 @@ fromSmallPrimeSigned (SmallPrimeWitness sn) = fromIntegral (fromSNat64 sn)
 --
 isSmallPrime :: SNat64 n -> Maybe (IsSmallPrime n)
 isSmallPrime sn = 
-  if (n > 1) && (n < 2^31) && isPrimeTrialDivision (fromIntegral n)
+  if (n > 1) && (n < 2^31) && Primes.isPrimeTrialDivision (fromIntegral n)
     then Just (SmallPrimeWitness sn)
     else Nothing
   where
@@ -162,6 +166,42 @@ mkSmallPrime _ (Witness31 sn) = SmallPrimeWitness sn
 -- | Escape hatch
 believeMeItsASmallPrime :: SNat64 n -> IsSmallPrime n
 believeMeItsASmallPrime sn = SmallPrimeWitness sn
+
+--------------------------------------------------------------------------------
+-- * Divisors
+
+-- | A proof that @k|n@
+data Divides (k :: Nat) (n :: Nat) = Divides 
+  { _dividend :: {-# UNPACK #-} !Word64    -- ^ @n@
+  , _divisor  :: {-# UNPACK #-} !Word64    -- ^ @k@
+  , _quotient :: {-# UNPACK #-} !Word64    -- ^ @q=n/k@
+  } 
+
+divides :: SNat64 k -> SNat64 n -> Maybe (Divides k n)
+divides (SNat64 k) (SNat64 n) = case divMod n k of
+  (q,r) -> if r == 0 then Just (Divides n k q) else Nothing
+
+instance Show (Divides k n) where
+  show (Divides n k q) = "(" ++ show k ++ "|" ++ show n ++ ")"
+
+data Divisor (n :: Nat) 
+  = forall k. Divisor (Divides k n)
+
+deriving instance Show (Divisor n)
+
+divisor :: SNat64 n -> SNat64 k -> Maybe (Divisor n)
+divisor sn sk = case divides sk sn of 
+  Nothing -> Nothing
+  Just d  -> Just (Divisor d)
+
+divisors :: forall n. SNat64 n -> [Divisor n]
+divisors sn@(SNat64 nn) = map worker ds where
+    ds = sort (map fromIntegral $ Primes.divisors (fromIntegral nn)) :: [Word64]
+    worker :: Word64 -> Divisor n
+    worker d = case someSNat64_ d of
+     SomeSNat64 sd -> case divisor sn sd of
+      Just proof     -> proof
+      Nothing        -> error "divisors: fatal error, should not happen"
 
 --------------------------------------------------------------------------------
 -- * Proxy

@@ -79,6 +79,11 @@ unsafeZechField p m = case mkZechField p m of
   Nothing   -> error $ "unsafeZechField: cannot find Conway polynomial for GF(" ++ show p ++ "^" ++ show m ++ ")"
   Just some -> some
 
+instance FieldWitness (WitnessZech p m) where
+  type FieldElem    (WitnessZech p m) = Zech p m
+  type WitnessPrime (WitnessZech p m) = p
+  type WitnessDim   (WitnessZech p m) = m
+
 --------------------------------------------------------------------------------
 
 -- | An element of the field @GF(p^m)@
@@ -125,6 +130,8 @@ instance Fractional (Zech p m) where
 
 instance Field (Zech p m) where
   type Witness (Zech p m) = WitnessZech p m
+  type Prime   (Zech p m) = p
+  type Dim     (Zech p m) = m
 
   characteristic (WitnessZech !w) = fromIntegral (fst (_zechParams w))
   dimension      (WitnessZech !w) = fromIntegral (snd (_zechParams w))

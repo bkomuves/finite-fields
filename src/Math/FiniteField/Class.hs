@@ -4,6 +4,7 @@
 {-# LANGUAGE BangPatterns, FlexibleContexts, TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables, TypeFamilies, TypeFamilyDependencies #-}
 {-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
+{-# LANGUAGE UndecidableSuperClasses, DataKinds #-}
 
 module Math.FiniteField.Class where
 
@@ -12,64 +13,90 @@ module Math.FiniteField.Class where
 import Data.Bits
 import Data.List
 
+import GHC.TypeNats (Nat)
+
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
 import System.Random ( RandomGen )
 
+import Math.FiniteField.TypeLevel
+
 --------------------------------------------------------------------------------
 
-class (Eq f, Ord f, Show f, Num f, Fractional f, Show (Witness f)) => Field f where
-  -- | witness for the existence of the field (this is an injective type family!) 
-  type Witness f = r | r -> f                 
-  -- | the prime characteristic
-  characteristic   :: Witness f -> Integer   
-  -- | dimension over the prime field (the exponent @m@ in @q=p^m@)
-  dimension        :: Witness f -> Integer    -- TODO: this should be Int
-  -- | the size (or order) of the field
-  fieldSize        :: Witness f -> Integer   
-  -- | The additive identity of the field
-  zero             :: Witness f -> f
-  -- | The multiplicative identity of the field
-  one              :: Witness f -> f
-  -- | check for equality with the additive identity
-  isZero           :: f -> Bool
-  -- | check for equality with the multiplicative identity
-  isOne            :: f -> Bool
-  -- | an element of the prime field
-  embed            :: Witness f -> Integer -> f         
-  embedSmall       :: Witness f -> Int     -> f   
-  -- | a uniformly random field element
-  randomFieldElem  :: RandomGen gen => Witness f -> gen -> (f,gen) 
-  -- | a random invertible element
-  randomInvertible :: RandomGen gen => Witness f -> gen -> (f,gen) 
-  -- | a primitive generator
-  primGen          :: Witness f -> f                    
-  -- | extract t  he witness from a field element
-  witnessOf        :: f -> Witness f                    
-  -- | exponentiation 
-  power            :: f -> Integer -> f                 
-  powerSmall       :: f -> Int     -> f            
-  -- | Frobenius automorphism @x -> x^p@
-  frobenius        :: f -> f
-  -- | list of field elements (of course it's only useful for very small fields)
-  enumerate        :: Witness f -> [f]                  
+-- | A class for witness types (these witness the existence of a field)
+class 
+  ( Show w, Field (FieldElem w)
+  , WitnessPrime w ~ Prime (FieldElem w) 
+  , WitnessDim   w ~ Dim   (FieldElem w) 
+  ) => FieldWitness w 
+  where
+    type FieldElem    w = f | f -> w
+    type WitnessPrime w :: Nat
+    type WitnessDim   w :: Nat
 
-  -- default implementations
-
-  embedSmall !w !x = embed w (fromIntegral x)
-  powerSmall !x !e = power x (fromIntegral e)      -- it's important not to use powerDefault here, because 'power' may be more efficient
-  fieldSize  !w    = characteristic w ^ dimension w
-  power            = powerDefault 
-  frobenius     !x = power x (characteristic (witnessOf x))
-
-  zero       !w    = embedSmall w 0
-  one        !w    = embedSmall w 1
-  -- isZero     !x    = (x == zero w)   -- we don't have a witness available here...
-  -- isOne      !x    = (x == one  w)
-
-  randomInvertible !w !g = case randomFieldElem w g of 
-    (x,g') -> if isZero x then randomInvertible w g' else (x,g')
+-- | A class for field element types 
+class 
+  ( Eq f, Ord f, Show f, Num f, Fractional f
+  , FieldWitness (Witness f)
+  , Prime f ~ WitnessPrime (Witness f)
+  , Dim   f ~ WitnessDim   (Witness f)
+  ) => Field f 
+  where
+    -- | witness for the existence of the field (this is an injective type family!) 
+    type Witness f = w | w -> f   
+    -- | the characteristic at type level
+    type Prime f :: Nat
+    -- | the dimension at type level
+    type Dim f :: Nat              
+    -- | the prime characteristic
+    characteristic   :: Witness f -> Integer   
+    -- | dimension over the prime field (the exponent @m@ in @q=p^m@)
+    dimension        :: Witness f -> Integer    -- TODO: this should be Int
+    -- | the size (or order) of the field
+    fieldSize        :: Witness f -> Integer   
+    -- | The additive identity of the field
+    zero             :: Witness f -> f
+    -- | The multiplicative identity of the field
+    one              :: Witness f -> f
+    -- | check for equality with the additive identity
+    isZero           :: f -> Bool
+    -- | check for equality with the multiplicative identity
+    isOne            :: f -> Bool
+    -- | an element of the prime field
+    embed            :: Witness f -> Integer -> f         
+    embedSmall       :: Witness f -> Int     -> f   
+    -- | a uniformly random field element
+    randomFieldElem  :: RandomGen gen => Witness f -> gen -> (f,gen) 
+    -- | a random invertible element
+    randomInvertible :: RandomGen gen => Witness f -> gen -> (f,gen) 
+    -- | a primitive generator
+    primGen          :: Witness f -> f                    
+    -- | extract t  he witness from a field element
+    witnessOf        :: f -> Witness f                    
+    -- | exponentiation 
+    power            :: f -> Integer -> f                 
+    powerSmall       :: f -> Int     -> f            
+    -- | Frobenius automorphism @x -> x^p@
+    frobenius        :: f -> f
+    -- | list of field elements (of course it's only useful for very small fields)
+    enumerate        :: Witness f -> [f]                  
+  
+    -- default implementations
+  
+    embedSmall !w !x = embed w (fromIntegral x)
+    powerSmall !x !e = power x (fromIntegral e)      -- it's important not to use powerDefault here, because 'power' may be more efficient
+    fieldSize  !w    = characteristic w ^ dimension w
+    power            = powerDefault 
+    frobenius     !x = power x (characteristic (witnessOf x))
+  
+    zero       !w    = embedSmall w 0
+    one        !w    = embedSmall w 1
+    -- isZero     !x    = (x == zero w)   -- we don't have a witness available here...
+    -- isOne      !x    = (x == one  w)
+  
+    randomInvertible !w !g = case randomFieldElem w g of 
+      (x,g') -> if isZero x then randomInvertible w g' else (x,g')
 
 --------------------------------------------------------------------------------
 

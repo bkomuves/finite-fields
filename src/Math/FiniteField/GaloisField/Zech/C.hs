@@ -59,6 +59,11 @@ unsafeCField p m = case mkCField p m of
   Nothing   -> error $ "unsafeCField: cannot find Conway polynomial for GF(" ++ show p ++ "^" ++ show m ++ ")"
   Just some -> some
 
+instance FieldWitness (WitnessC p m) where
+  type FieldElem    (WitnessC p m) = CFq p m
+  type WitnessPrime (WitnessC p m) = p
+  type WitnessDim   (WitnessC p m) = m
+
 --------------------------------------------------------------------------------
 
 makeCZechTable :: Z.WitnessZech p m -> WitnessC p m
@@ -158,6 +163,8 @@ instance Fractional (CFq p m) where
 
 instance Field (CFq p m) where
   type Witness (CFq p m) = WitnessC p m
+  type Prime   (CFq p m) = p
+  type Dim     (CFq p m) = m
 
   characteristic    w = fromIntegral (rawPrime     w)
   dimension         w = fromIntegral (rawDim       w)

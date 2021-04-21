@@ -105,6 +105,11 @@ unsafeGaloisField p m = case m of
           Nothing -> error $ "unsafeGaloisField: cannot find Conway polynomial for GF(" ++ show p ++ "^" ++ show m ++ ")"
           Just (SomeConwayPoly cw) -> SomeWitnessGF (WitnessFq cw)
 
+instance FieldWitness (WitnessGF p m) where
+  type FieldElem    (WitnessGF p m) = GF p m
+  type WitnessPrime (WitnessGF p m) = p
+  type WitnessDim   (WitnessGF p m) = m
+
 --------------------------------------------------------------------------------  
 
 -- | An element of the Galois field of order @q = p^m@
@@ -212,6 +217,8 @@ instance Fractional (GF p m) where
 
 instance Field (GF p m) where
   type Witness (GF p m) = WitnessGF p m
+  type Prime   (GF p m) = p
+  type Dim     (GF p m) = m
   characteristic   !w = fromIntegral (fst (gfParams w))
   dimension        !w = fromIntegral (snd (gfParams w))
   fieldSize        !w = case gfParams w of (p,m) -> (fromIntegral p :: Integer) ^ m

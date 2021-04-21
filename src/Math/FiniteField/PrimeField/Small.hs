@@ -67,6 +67,11 @@ unsafeSmallPrimeField :: Int -> SomeWitnessFp
 unsafeSmallPrimeField p = case someSNat64 (fromIntegral p) of
   SomeSNat64 sp -> SomeWitnessFp (WitnessFp (believeMeItsASmallPrime sp))
 
+instance FieldWitness (WitnessFp p) where
+  type FieldElem    (WitnessFp p) = Fp p
+  type WitnessPrime (WitnessFp p) = p
+  type WitnessDim   (WitnessFp p) = 1
+
 --------------------------------------------------------------------------------
 
 -- | An element of the prime field @F_p@
@@ -141,6 +146,8 @@ instance Fractional (Fp p) where
 
 instance Field (Fp p) where
   type Witness (Fp p) = WitnessFp p
+  type Prime   (Fp p) = p
+  type Dim     (Fp p) = 1
   characteristic     w = case w of { WitnessFp p -> fromSmallPrimeInteger p }
   dimension          _ = 1
   fieldSize          w = case w of { WitnessFp p -> fromSmallPrimeInteger p }
