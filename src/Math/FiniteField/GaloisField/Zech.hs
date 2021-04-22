@@ -29,6 +29,7 @@ module Math.FiniteField.GaloisField.Zech
     -- * Subfields
     -- $subfield_doc
   , SubField , ambientWitness , subFieldWitness , subFieldProof , fiberSize
+  , subFieldName
   , SomeSubField(..)
   , constructSubField , enumerateSubFields
   , embedSubField
@@ -125,6 +126,10 @@ data SubField (p :: Nat) (m :: Nat) (k :: Nat) = SubField
   , fiberSize       :: !Int32              -- ^ the quotient @(p^m-1)/(p^k-1)@
   }
   deriving Show
+
+-- | Returns something like @"GF(p^3) ⊆ GF(p^6)"@
+subFieldName :: SubField p m k -> String
+subFieldName w = fieldName (subFieldWitness w) ++ " ⊆ " ++   fieldName (ambientWitness w)
 
 -- | Some subfield of @GF(p,m)@
 data SomeSubField (p :: Nat) (m :: Nat) 
