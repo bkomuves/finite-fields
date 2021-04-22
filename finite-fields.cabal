@@ -75,7 +75,7 @@ Library
                         cbits/zech.c
 
   ghc-options:          -fwarn-tabs -fno-warn-unused-matches -fno-warn-name-shadowing -fno-warn-unused-imports
-  cc-options:           -O3
+  -- cc-options:           -O3
 
 --------------------------------------------------------------------------------
 
