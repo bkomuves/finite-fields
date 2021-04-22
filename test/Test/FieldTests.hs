@@ -35,4 +35,6 @@ small_cfield_tests = testGroup "GaloisField/Zech/C" (map someFieldProps small_cf
 
 someFieldProps :: (String,TestField) -> TestTree
 someFieldProps (name,somefield) = case somefield of
-  TestField unwrap field -> fieldProperties ("field properties for the field " ++ name) unwrap field
+  TestField field -> fieldProperties ("field properties for the field " ++ name) field
+
+--------------------------------------------------------------------------------

@@ -32,7 +32,7 @@ import Math.FiniteField.GaloisField.Zech  as Zech
 
 import Test.Common
 import Test.WitnessStore
-
+import Test.ConcreteFields
 
 --------------------------------------------------------------------------------
 
@@ -74,6 +74,7 @@ subFieldProperties groupName subfield = testGroup groupName
   ]
 
 --------------------------------------------------------------------------------
+-- * properties
 
 prop_embed_project :: SubField p m k -> Zech p k -> Bool
 prop_embed_project subfield x = projectSubField subfield (embedSubField subfield x) == Just x
@@ -116,89 +117,56 @@ prop_embed_iso_div :: SubField p m k -> Zech p k -> NonZero (Zech p k) -> Bool
 prop_embed_iso_div subfield x (NonZero y) = embedSubField subfield (x / y) == embedSubField subfield x / embedSubField subfield y
 
 --------------------------------------------------------------------------------
--- * QuickCheck boilerplate shit
-
-mkGen :: (forall g. RandomGen g => (g -> (a,g))) -> Gen a
-mkGen f = MkGen (\r _ -> let (x,_) = f r in x)
-
-genZech :: SNat64 p -> SNat64 m -> Gen (Zech p m)
-genZech sp sm = mkGen (randomFieldElem witness) where
-  witness = lookupZechStore sp sm 
-
-genZechNonZero :: SNat64 p -> SNat64 m -> Gen (NonZero (Zech p m))
-genZechNonZero sp sm = NonZero <$> mkGen (randomInvertible witness) where
-  witness = lookupZechStore sp sm 
-
---------------------------------------------------------------------------------
-
-mkProperty1 :: WitnessZech p m -> (Zech p m -> Bool) -> Property
-mkProperty1 witness f = Test.Tasty.QuickCheck.forAll gen f where
-  gen = genZech (fieldPrimeSNat64 witness) (fieldDimSNat64 witness)
-
-mkProperty2 :: WitnessZech p m -> (Zech p m -> Zech p m -> Bool) -> Property
-mkProperty2 witness f = forAll2 gen gen f where
-  gen = genZech (fieldPrimeSNat64 witness) (fieldDimSNat64 witness)
-
-mkProperty1_NZ :: WitnessZech p m -> (NonZero (Zech p m) -> Bool) -> Property
-mkProperty1_NZ witness f = Test.Tasty.QuickCheck.forAll gen f where
-  gen = genZechNonZero (fieldPrimeSNat64 witness) (fieldDimSNat64 witness)
-
-mkProperty2_NZ :: WitnessZech p m -> (Zech p m -> NonZero (Zech p m) -> Bool) -> Property
-mkProperty2_NZ witness f = forAll2 gen1 gen2 f where
-  gen1 = genZech        (fieldPrimeSNat64 witness) (fieldDimSNat64 witness)
-  gen2 = genZechNonZero (fieldPrimeSNat64 witness) (fieldDimSNat64 witness)
-
---------------------------------------------------------------------------------
 
 x_nullary :: (SubField p m k -> Bool) -> SubField p m k -> Property
 x_nullary f subfield = property (f subfield)
 
 x_unary :: (SubField p m k -> Zech p k -> Bool) -> SubField p m k -> Property
-x_unary f subfield = mkProperty1 (subFieldWitness subfield) (f subfield)
+x_unary f subfield = unaryProp (subFieldWitness subfield) (f subfield)
 
 x_unaryI :: (SubField p m k -> Int -> Bool) -> SubField p m k -> Property
 x_unaryI f subfield = property (f subfield)
 
 x_unaryNZ :: (SubField p m k -> NonZero (Zech p k) -> Bool) -> SubField p m k -> Property
-x_unaryNZ f subfield = mkProperty1_NZ (subFieldWitness subfield) (f subfield)
+x_unaryNZ f subfield = unaryPropNZ (subFieldWitness subfield) (f subfield)
 
 x_binary :: (SubField p m k -> Zech p k -> Zech p k -> Bool) -> SubField p m k -> Property
-x_binary f subfield = mkProperty2 (subFieldWitness subfield) (f subfield)
+x_binary f subfield = binaryProp (subFieldWitness subfield) (f subfield)
 
 x_binaryNZ :: (SubField p m k -> Zech p k -> NonZero (Zech p k) -> Bool) -> SubField p m k -> Property
-x_binaryNZ f subfield = mkProperty2_NZ (subFieldWitness subfield) (f subfield)
+x_binaryNZ f subfield = binaryPropNZ (subFieldWitness subfield) (f subfield)
 
 --------------------------------------------------------------------------------
 
 ambient_zechfields :: [(String,TestAmbientField)]
 ambient_zechfields = 
   [ -- 2^m
-    ( "Zech(2^1)"   , TestAmbientField (zechfield @2 @1 ) )
-  , ( "Zech(2^2)"   , TestAmbientField (zechfield @2 @2 ) )
-  , ( "Zech(2^3)"   , TestAmbientField (zechfield @2 @3 ) )
-  , ( "Zech(2^4)"   , TestAmbientField (zechfield @2 @4 ) )
-  , ( "Zech(2^5)"   , TestAmbientField (zechfield @2 @5 ) )
-  , ( "Zech(2^6)"   , TestAmbientField (zechfield @2 @6 ) )
-  , ( "Zech(2^7)"   , TestAmbientField (zechfield @2 @7 ) )
-  , ( "Zech(2^8)"   , TestAmbientField (zechfield @2 @8 ) )
-  , ( "Zech(2^9)"   , TestAmbientField (zechfield @2 @9 ) )
-  , ( "Zech(2^10)"  , TestAmbientField (zechfield @2 @10) )
-  , ( "Zech(2^12)"  , TestAmbientField (zechfield @2 @12) )
-  , ( "Zech(2^14)"  , TestAmbientField (zechfield @2 @14) )
-  , ( "Zech(2^16)"  , TestAmbientField (zechfield @2 @16) )
+    ( "Zech(2^1)"   , TestAmbientField (zechField @2 @1 ) )
+  , ( "Zech(2^2)"   , TestAmbientField (zechField @2 @2 ) )
+  , ( "Zech(2^3)"   , TestAmbientField (zechField @2 @3 ) )
+  , ( "Zech(2^4)"   , TestAmbientField (zechField @2 @4 ) )
+  , ( "Zech(2^5)"   , TestAmbientField (zechField @2 @5 ) )
+  , ( "Zech(2^6)"   , TestAmbientField (zechField @2 @6 ) )
+  , ( "Zech(2^7)"   , TestAmbientField (zechField @2 @7 ) )
+  , ( "Zech(2^8)"   , TestAmbientField (zechField @2 @8 ) )
+  , ( "Zech(2^9)"   , TestAmbientField (zechField @2 @9 ) )
+  , ( "Zech(2^10)"  , TestAmbientField (zechField @2 @10) )
+  , ( "Zech(2^12)"  , TestAmbientField (zechField @2 @12) )
+  , ( "Zech(2^14)"  , TestAmbientField (zechField @2 @14) )
+  , ( "Zech(2^16)"  , TestAmbientField (zechField @2 @16) )
     -- 3^m
-  , ( "Zech(3^3)"   , TestAmbientField (zechfield @3 @3 ) )
-  , ( "Zech(3^4)"   , TestAmbientField (zechfield @3 @4 ) )
-  , ( "Zech(3^6)"   , TestAmbientField (zechfield @3 @6 ) )
-  , ( "Zech(3^8)"   , TestAmbientField (zechfield @3 @8 ) )
-  , ( "Zech(3^9)"   , TestAmbientField (zechfield @3 @9 ) )
+  , ( "Zech(3^3)"   , TestAmbientField (zechField @3 @3 ) )
+  , ( "Zech(3^4)"   , TestAmbientField (zechField @3 @4 ) )
+  , ( "Zech(3^6)"   , TestAmbientField (zechField @3 @6 ) )
+  , ( "Zech(3^8)"   , TestAmbientField (zechField @3 @8 ) )
+  , ( "Zech(3^9)"   , TestAmbientField (zechField @3 @9 ) )
     -- 5^m
-  , ( "Zech(5^1)"   , TestAmbientField (zechfield @5 @1 ) )
-  , ( "Zech(5^2)"   , TestAmbientField (zechfield @5 @2 ) )
-  , ( "Zech(5^3)"   , TestAmbientField (zechfield @5 @3 ) )
-  , ( "Zech(5^4)"   , TestAmbientField (zechfield @5 @4 ) )
-  , ( "Zech(5^5)"   , TestAmbientField (zechfield @5 @5 ) )
-  , ( "Zech(5^6)"   , TestAmbientField (zechfield @5 @6 ) )
+  , ( "Zech(5^1)"   , TestAmbientField (zechField @5 @1 ) )
+  , ( "Zech(5^2)"   , TestAmbientField (zechField @5 @2 ) )
+  , ( "Zech(5^3)"   , TestAmbientField (zechField @5 @3 ) )
+  , ( "Zech(5^4)"   , TestAmbientField (zechField @5 @4 ) )
+  , ( "Zech(5^5)"   , TestAmbientField (zechField @5 @5 ) )
+  , ( "Zech(5^6)"   , TestAmbientField (zechField @5 @6 ) )
   ]
 
 --------------------------------------------------------------------------------
