@@ -67,10 +67,10 @@ unsafeSmallPrimeField :: Int -> SomeWitnessFp
 unsafeSmallPrimeField p = case someSNat64 (fromIntegral p) of
   SomeSNat64 sp -> SomeWitnessFp (WitnessFp (believeMeItsASmallPrime sp))
 
-instance FieldWitness (WitnessFp p) where
-  type FieldElem    (WitnessFp p) = Fp p
-  type WitnessPrime (WitnessFp p) = p
-  type WitnessDim   (WitnessFp p) = 1
+-- instance FieldWitness (WitnessFp p) where
+--   type FieldElem    (WitnessFp p) = Fp p
+--   type WitnessPrime (WitnessFp p) = p
+--   type WitnessDim   (WitnessFp p) = 1
 
 --------------------------------------------------------------------------------
 

@@ -2,7 +2,6 @@
 -- | Stuff needed in more than one place
 
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, FlexibleContexts, Rank2Types #-}
-{-# LANGUAGE UndecidableSuperClasses #-}
 
 module Test.Common where
 

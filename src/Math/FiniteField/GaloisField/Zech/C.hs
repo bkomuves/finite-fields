@@ -59,10 +59,10 @@ unsafeCField p m = case mkCField p m of
   Nothing   -> error $ "unsafeCField: cannot find Conway polynomial for GF(" ++ show p ++ "^" ++ show m ++ ")"
   Just some -> some
 
-instance FieldWitness (WitnessC p m) where
-  type FieldElem    (WitnessC p m) = CFq p m
-  type WitnessPrime (WitnessC p m) = p
-  type WitnessDim   (WitnessC p m) = m
+-- instance FieldWitness (WitnessC p m) where
+--   type FieldElem    (WitnessC p m) = CFq p m
+--   type WitnessPrime (WitnessC p m) = p
+--   type WitnessDim   (WitnessC p m) = m
 
 --------------------------------------------------------------------------------
 

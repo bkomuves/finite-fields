@@ -54,10 +54,10 @@ unsafePrimeField :: Integer -> SomeWitnessFp
 unsafePrimeField p = case someSNat p of
   SomeSNat sp -> SomeWitnessFp (WitnessFp (believeMeItsPrime sp))
 
-instance FieldWitness (WitnessFp p) where
-  type FieldElem    (WitnessFp p) = Fp p
-  type WitnessPrime (WitnessFp p) = p
-  type WitnessDim   (WitnessFp p) = 1
+-- instance FieldWitness (WitnessFp p) where
+--   type FieldElem    (WitnessFp p) = Fp p
+--   type WitnessPrime (WitnessFp p) = p
+--   type WitnessDim   (WitnessFp p) = 1
 
 --------------------------------------------------------------------------------
 

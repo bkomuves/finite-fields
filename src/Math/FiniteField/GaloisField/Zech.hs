@@ -96,10 +96,10 @@ constructZechField sp sm = case GF.constructGaloisField sp sm of
   Nothing   -> Nothing
   Just wgf  -> Just (WitnessZech (makeZechTable wgf))
 
-instance FieldWitness (WitnessZech p m) where
-  type FieldElem    (WitnessZech p m) = Zech p m
-  type WitnessPrime (WitnessZech p m) = p
-  type WitnessDim   (WitnessZech p m) = m
+-- instance FieldWitness (WitnessZech p m) where
+--   type FieldElem    (WitnessZech p m) = Zech p m
+--   type WitnessPrime (WitnessZech p m) = p
+--   type WitnessDim   (WitnessZech p m) = m
 
 --------------------------------------------------------------------------------
 

@@ -16,7 +16,8 @@
 -- This program counts the affine points, so the result it outputs is one less. 
 --
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, ScopedTypeVariables #-}
+
 module Main where
 
 --------------------------------------------------------------------------------
@@ -42,10 +43,10 @@ countCurvePointsIn !zero !ab = go 0 where
   go !acc []         = acc
   go !acc ((x,y):ps) = if curveEquation ab x y == zero then go (acc+1) ps else go acc ps 
 
-fieldWorker :: Field f => Witness f -> IO ()
+fieldWorker :: forall f. Field f => Witness f -> IO ()
 fieldWorker field = do
-  let zero  =  embed field 0
-      ab    = (embed field 0, embed field 2)
+  let zero  =  embed field 0                  
+      ab    = (embed field 0, embed field 2) 
   let elems = enumerate field 
       plane = [ (x,y) | x<-elems, y<-elems ] 
   let cnt   = countCurvePointsIn zero ab plane

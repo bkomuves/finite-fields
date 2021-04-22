@@ -88,17 +88,6 @@ deriving instance Show SomeWitnessGF
 mkGaloisField :: Int -> Int -> Maybe SomeWitnessGF
 mkGaloisField p m = case (someSNat64 (fromIntegral p), someSNat64 (fromIntegral m)) of 
   (SomeSNat64 sp, SomeSNat64 sm) -> SomeWitnessGF <$> (constructGaloisField sp sm)
-{-
-mkGaloisField p m = case m of
-  1  -> case lookupSomeConwayPoly p m of
-          Just _  -> case someSNat64 (fromIntegral p) of 
-                       SomeSNat64 sp -> Just (SomeWitnessGF $ WitnessFp $ believeMeItsASmallPrime sp)
-          Nothing -> case someSNat64 (fromIntegral p) of 
-                       SomeSNat64 sp -> (SomeWitnessGF . WitnessFp) <$> isSmallPrime sp 
-  _  -> case lookupSomeConwayPoly p m of 
-          Nothing -> Nothing
-          Just (SomeConwayPoly cw) -> Just (SomeWitnessGF (WitnessFq cw))
--}
 
 -- | In the case of @m=1@ you are responsible for guaranteeing that @p@ is a prime
 -- (for @m>1@ we have to look up a Conway polynomial anyway).
@@ -137,10 +126,10 @@ constructGaloisField' sp snatm = snat64IfOneThenElse snatm primeBranch powerBran
     Nothing -> NoWitness
     Just cw -> JustWitness (WitnessFq cw)
 
-instance FieldWitness (WitnessGF p m) where
-  type FieldElem    (WitnessGF p m) = GF p m
-  type WitnessPrime (WitnessGF p m) = p
-  type WitnessDim   (WitnessGF p m) = m
+-- instance FieldWitness (WitnessGF p m) where
+--   type FieldElem    (WitnessGF p m) = GF p m
+--   type WitnessPrime (WitnessGF p m) = p
+--   type WitnessDim   (WitnessGF p m) = m
 
 --------------------------------------------------------------------------------  
 

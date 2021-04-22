@@ -4,7 +4,7 @@
 {-# LANGUAGE BangPatterns, FlexibleContexts, TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables, TypeFamilies, TypeFamilyDependencies #-}
 {-# LANGUAGE ExistentialQuantification, StandaloneDeriving #-}
-{-# LANGUAGE UndecidableSuperClasses, DataKinds #-}
+{-# LANGUAGE DataKinds #-}
 
 module Math.FiniteField.Class where
 
@@ -26,6 +26,9 @@ import Math.FiniteField.TypeLevel.Singleton
 --------------------------------------------------------------------------------
 -- * Fields
 
+{-
+-- NOTE: recursive classes just cause problems
+
 -- | A class for witness types (these witness the existence of a field)
 class 
   ( Show w, Field (FieldElem w)
@@ -36,15 +39,10 @@ class
     type FieldElem    w = f | f -> w
     type WitnessPrime w :: Nat
     type WitnessDim   w :: Nat
+-}
 
 -- | A class for field element types 
-class 
-  ( Eq f, Ord f, Show f, Num f, Fractional f
-  , FieldWitness (Witness f)
-  , Prime f ~ WitnessPrime (Witness f)
-  , Dim   f ~ WitnessDim   (Witness f)
-  ) => Field f 
-  where
+class (Eq f, Ord f, Show f, Num f, Fractional f, Show (Witness f)) => Field f where
     -- | witness for the existence of the field (this is an injective type family!) 
     type Witness f = w | w -> f   
     -- | the characteristic at type level

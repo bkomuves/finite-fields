@@ -2,7 +2,6 @@
 -- | Generic properties of (finite) fields
 
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, FlexibleContexts #-}
-{-# LANGUAGE UndecidableInstances #-}
 
 module Test.FieldProperties where
 
