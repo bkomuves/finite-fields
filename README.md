@@ -21,6 +21,7 @@ Further plans
 --------------
 
 * generic field extensions
+* polynomials over finite fields
 * big finite fields relevant for cryptography
 * maybe even JIT compiling specific fields would make sense?
 * optional: elliptic curves over finite fields? (again we could have "small" curves 

@@ -72,7 +72,7 @@ class (Eq f, Ord f, Show f, Num f, Fractional f, Show (Witness f)) => Field f wh
     randomInvertible :: RandomGen gen => Witness f -> gen -> (f,gen) 
     -- | a primitive generator
     primGen          :: Witness f -> f                    
-    -- | extract t  he witness from a field element
+    -- | extract the witness from a field element
     witnessOf        :: f -> Witness f                    
     -- | exponentiation 
     power            :: f -> Integer -> f                 
@@ -141,7 +141,7 @@ deriving instance Show SomeField
 --------------------------------------------------------------------------------
 -- * Some generic functions
 
--- | Returns @"GF(p)"@ or @"GF(p^m)"
+-- | Returns @"GF(p)"@ or @"GF(p^m)"@
 fieldName :: Field f => Witness f -> String
 fieldName w 
   | m == 1     = "GF(" ++ show p ++ ")"
