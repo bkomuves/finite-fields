@@ -21,6 +21,13 @@
 //   uint32_t zech_logs[];
 // };
 
+GF zech_zero(GF x) { return -1; }
+GF zech_one (GF x) { return  0; }
+GF zech_prim()     { return  1; }
+
+bool zech_is_zero(GF x) { return (x == -1); }
+bool zech_is_one (GF x) { return (x ==  0); }
+
 int ipow(int x,int e) {
   if (x==0) return 0;
   if (e==0) return 1;

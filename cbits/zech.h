@@ -51,12 +51,21 @@ GF zech_embed(Zech, int);
 // enumerate all field elements
 int zech_enumerate(Zech, GF*);
 
+/*
 static inline GF zech_zero(GF x) { return -1; }
 static inline GF zech_one (GF x) { return  0; }
 static inline GF zech_prim()     { return  1; }
 
 static inline bool zech_is_zero(GF x) { return (x == -1); }
 static inline bool zech_is_one (GF x) { return (x ==  0); }
+*/
+
+GF zech_zero(GF);
+GF zech_one (GF);
+GF zech_prim();
+
+bool zech_is_zero(GF);
+bool zech_is_one (GF);
 
 #endif // _ZECH_H_INCLUDED_
 
