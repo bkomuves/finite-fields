@@ -13,12 +13,12 @@ Description:          Implementation of arithmetic in finite fields (prime field
 License:              BSD3
 License-file:         LICENSE
 Author:               Balazs Komuves
-Copyright:            (c) 2021 Balazs Komuves
+Copyright:            (c) 2021-2023 Balazs Komuves
 Maintainer:           bkomuves (plus) hackage (at) gmail (dot) com
 Homepage:             https://github.com/bkomuves/finite-fields
 Stability:            Experimental
 Category:             Math
-Tested-With:          GHC == 8.6.5
+Tested-With:          GHC == 8.6.5, GHC == 9.0.2
 Cabal-Version:        1.24
 Build-Type:           Custom
 
@@ -27,6 +27,7 @@ extra-source-files:   conway/ConwayPolynomials.txt
                       examples/curve_count.hs
                       cbits/zech.h
                       cbits/zech.c
+                      cbits/conway_table.c
 
 source-repository head
   type:                 git

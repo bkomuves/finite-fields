@@ -1,6 +1,6 @@
 .DS_Store
 cabal.project.local
+cabal.project.local~
 dist
 dist-newstyle
-cbits/conway_table.c
 tmp
